@@ -11,6 +11,8 @@ import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.common.constraint.Nullable;
 
+import java.util.function.Consumer;
+
 public class ArticulationImpl implements Articulation {
     
 // //======================================================================================\\
@@ -24,7 +26,8 @@ public class ArticulationImpl implements Articulation {
 //=========   ====  == =
     
     @JsonIgnore protected final Transform transform;
-    @JsonGetter("transform") public Transform getTransform() { return this.transform; }
+    @Override @JsonGetter("transform") 
+    public Transform getTransform() { return this.transform; }
 
 //=========   ====  == =
 //      PARENT PROPERTY
@@ -39,45 +42,24 @@ public class ArticulationImpl implements Articulation {
 //      ARTICULATION PROPERTIES
 //=========   ====  == =
     
-    @JsonProperty("angleRad")
-    protected double angleRad;
-    
     @Override @JsonGetter("angleRad")
-    public double getAngleRad() { return this.angleRad; }
+    public double getAngleRad() { 
+        // This works given that the articulation only rotates around one axis
+        return this.transform.getLocalRotation().getEulerAngles().norm();
+    }
 
     @Override @JsonSetter("angleRad")
-    public void setAngleRad(double angleRad) { this.angleRad = angleRad; }
+    public void setAngleRad(double angleRad) { 
+        this.transform.setLocalRotation(Rotation.from(Axis3D.Z.getUnitVector().scaledBy(angleRad)));
+    }
     
-    @JsonProperty("axis")
-    protected final Axis3D axis;
-    @JsonGetter("axis") public Axis3D getAxis() { return axis; }
-    
-    @JsonProperty("length") private final double lengthMm;
-    @JsonGetter("length") public double getLength() { return lengthMm; }
+    @JsonGetter("length") public double getLength() { 
+        if (parent == null) { return Vector3D.Zero().distanceTo(this.transform.getLocalPosition()); }
+        return this.parent.getTransform().getGlobalPosition().distanceTo(this.transform.getGlobalPosition());
+    }
     
     @JsonProperty("name") private final String name;
     @JsonGetter("name") public String getName() { return name; }
-
-//=========   ====  == =
-//      OVERRIDE PROPERTIES 
-//=========   ====  == =
-    
-    @Override
-    public void update() {
-        transform.setLocalRotation(Rotation.from(axis.getUnitVector().scaledBy(angleRad)));
-        transform.setLocalPosition(Axis3D.X.getUnitVector().scaledBy(parent.getLength()));
-    }
-    
-    @Override public Vector3D getGlobalPosition() { return transform.getGlobalPosition(); }
-    @Override public Vector3D getLocalPosition() {
-        return transform.getLocalPosition();
-    }
-    @Override public Rotation getGlobalRotation() {
-        return transform.getGlobalRotation();
-    }
-    @Override public Rotation getLocalRotation() {
-        return transform.getLocalRotation();
-    }
 
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -85,19 +67,17 @@ public class ArticulationImpl implements Articulation {
 // ||                                                                                      ||
 // \\======================================================================================//
     
-    ArticulationImpl(
+    public ArticulationImpl(
             @JsonProperty("name") String name,
-            ArticulationImpl parent,
-            @JsonProperty("axis") Axis3D axis,
-            @JsonProperty("length") double lengthMm
+            Articulation parent,
+            Consumer<Transform> transformInitFunction
     ) {
-        this.transform = parent == null 
-                ? Transform.createFromRoot()
-                : Transform.createFrom(parent.transform);
         this.parent = parent;
-        this.axis = axis;
-        this.lengthMm = lengthMm;
         this.name = name;
+        this.transform = parent == null
+                ? Transform.createFromRoot()
+                : Transform.createFrom(parent.getTransform());
+        transformInitFunction.accept(this.transform);
     }
     
 }

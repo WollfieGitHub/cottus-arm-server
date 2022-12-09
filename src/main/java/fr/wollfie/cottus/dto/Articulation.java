@@ -2,6 +2,7 @@
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import fr.wollfie.cottus.models.arm.positioning.Transform;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
@@ -12,7 +13,9 @@ public interface Articulation {
 //      INFO PROPERTIES
 //=========   ====  == =
     
-    /** @return The length in mm of the articulation */
+    /** @return The length in mm of the articulation between the rotation point and the rotation point
+     * of its child
+     * */
     @JsonGetter("length")
     double getLength();
     
@@ -20,9 +23,9 @@ public interface Articulation {
     @JsonGetter("name")
     String getName();
     
-    /** @return The axis along which the articulation rotates */
-    @JsonGetter("axis")
-    Axis3D getAxis();
+    /** @return The transform of the articulation */
+    @JsonGetter("transform")
+    Transform getTransform();
     
 //=========   ====  == =
 //      PARENT PROPERTY
@@ -32,30 +35,6 @@ public interface Articulation {
      * articulation is the root */
     @JsonGetter("parent")
     Articulation getParent();
-    
-//=========   ====  == =
-//      POSITION CONTROL
-//=========   ====  == =
-    
-    /** @return The global position of the articulation,
-     * relative to the world's origin */
-    @JsonGetter("globalPosition")
-    Vector3D getGlobalPosition();
-    
-    /** @return The local position of the articulation, 
-     * relative to the articulation before it */
-    @JsonGetter("localPosition")
-    Vector3D getLocalPosition();
-
-    /** @return The global euler angles of the articulation,
-     * relative to the world's origin */
-    @JsonGetter("globalRotation")
-    Rotation getGlobalRotation();
-    
-    /** @return The local euler angles of the articulation,
-     * relative to the articulation before it */
-    @JsonGetter("localRotation")
-    Rotation getLocalRotation();
     
 //=========   ====  == =
 //      ROTATION CONTROL
@@ -71,9 +50,5 @@ public interface Articulation {
     /** @return The angle in radians to which the articulation is rotated */
     @JsonGetter("angleRad")
     double getAngleRad();
-    
-    /** If the articulation needs to do some kind of actualization after
-     * its angle has been set */
-    void update();
     
 }

@@ -2,6 +2,7 @@
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.utils.Constants;
+import fr.wollfie.cottus.utils.Utils;
 
 import static java.lang.Math.*;
 
@@ -33,9 +34,9 @@ public class Vector3D {
 
     /** @return True if the vector is zero, false otherwise */
     public boolean isZero() {
-        return abs(x) < Constants.EPSILON
-                && abs(y) < Constants.EPSILON
-                && abs(z) < Constants.EPSILON;
+        return Utils.isZero(x)
+                && Utils.isZero(y)
+                && Utils.isZero(z);
     }
     
     /**
@@ -137,7 +138,14 @@ public class Vector3D {
             case Z -> Vector3D.of(x, y, val);
         };
     }
+    
+    /** @return The angle in radians between {@code this} vector and {@code that} vector */
+    public double angleTo(Vector3D that) {
+        return acos(this.dot(that));
+    }
 
+    /** @return The distance in mm between {@code this} vector and {@code that} vector */
+    public double distanceTo(Vector3D that) { return this.subtract(that).norm(); }
 
     @Override
     public String toString() {

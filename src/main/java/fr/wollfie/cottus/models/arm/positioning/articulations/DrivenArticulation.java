@@ -2,6 +2,7 @@
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.dto.Articulation;
+import fr.wollfie.cottus.utils.maths.Axis3D;
 
 public class DrivenArticulation extends ArticulationImpl {
     
@@ -38,13 +39,15 @@ public class DrivenArticulation extends ArticulationImpl {
         this.target = target;
         this.stepSize = stepSize;
     }
-    
-    @Override
+
+    /**
+     * Updates the position and rotation of the articulation, by shadowing the articulation
+     * it has for target
+     */
     public void update() {
         // Update the angle by making it smoothly change towards the target
-        this.angleRad = stepSize * target.getAngleRad() + (1-stepSize) * this.angleRad;
-        // Then update the transform
-        super.update();
+        double angleRad = getAngleRad();
+        this.setAngleRad(stepSize * target.getAngleRad() + (1-stepSize) * angleRad);
     }
 
 //=========   ====  == =

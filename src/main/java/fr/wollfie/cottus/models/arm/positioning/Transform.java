@@ -3,7 +3,9 @@
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector3D;
+import fr.wollfie.cottus.utils.maths.matrices.Matrix;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.common.constraint.NotNull;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
@@ -35,10 +37,23 @@ public class Transform {
      * relative to the world's origin */
     public static Transform createFromRoot() { return new Transform(null); }
 
+    /**
+     * Use the given transformation matrix to position this transform 
+     * @param parentToChild The transformation matrix which, from a point in {@code this} local space
+     *                     will transform the point in the child's local space
+     */
+    public void setTransform(Matrix parentToChild) {
+        this.localPosition = parentToChild.multipliedBy(Vector3D.Zero());
+        double thetaX = Axis3D.X.getUnitVector().angleTo(parentToChild.multipliedBy(Axis3D.X.getUnitVector()));
+        double thetaY = Axis3D.Y.getUnitVector().angleTo(parentToChild.multipliedBy(Axis3D.Y.getUnitVector()));
+        double thetaZ = Axis3D.Z.getUnitVector().angleTo(parentToChild.multipliedBy(Axis3D.Z.getUnitVector()));
+        this.localRotation = Rotation.from(Vector3D.of(thetaX, thetaY, thetaZ));
+    }
+
 //=========   ====  == =
 //      ROTATION PROPERTY
 //=========   ====  == =
-
+    
     /** Intrinsic rotation of the transform saved as Euler Angles */
     @JsonProperty("localRotation")
     private Rotation localRotation;
@@ -60,6 +75,10 @@ public class Transform {
     /** Sets the local rotation of this transform */
     @JsonSetter("localRotation")
     public void setLocalRotation(Rotation localRotation) { this.localRotation = localRotation; }
+    
+    public void setLocalRotation(Axis3D axis, double value) {
+        setLocalRotation(Rotation.from(getLocalRotation().getEulerAngles().withAxis3DSetTo(axis, value)));    
+    }
 
     @JsonSetter("globalRotation")
     public void setGlobalRotation(Rotation globalRotation) { throw new NotImplementedYet(); }
@@ -84,22 +103,61 @@ public class Transform {
     
     /** @return The local position of the transform  */
     @JsonGetter("globalPosition")
-    public Vector3D getGlobalPosition() {
-        if (parent == null) { return getLocalPosition(); }
-        
-        Vector3D parentGlobalPosition = parent.getGlobalPosition();
-        return getLocalPosition()
-                .rotatedAtPointUsing(
-                        parent.getGlobalRotation().getEulerAngles(),
-                        parentGlobalPosition
-                ).add(parentGlobalPosition);
-    }
+    public Vector3D getGlobalPosition() { return this.transform(getLocalPosition()); }
 
     /** Sets the global position of this transform */
     @JsonSetter("globalPosition")
     public void setGlobalPosition(Vector3D globalPosition) {
-        if (parent == null) { this.localPosition = globalPosition; }
-        else { this.localPosition = globalPosition.subtract(parent.getGlobalPosition()); }
+        this.setLocalPosition(this.inverseTransform(globalPosition));
+    }
+    
+//=========   ====  == =
+//      TRANSFORM FUNCTIONS
+//=========   ====  == =
+
+    /**
+     * Transforms a position vector that would be in the local space of this transform to
+     * a position vector in world space
+     * @param localPosition The local position
+     * @return The world space position
+     */
+    public Vector3D transform(Vector3D localPosition) {
+        if (parent == null) { return localPosition; }
+
+        Vector3D parentGlobalPosition = parent.getGlobalPosition();
+        return localPosition.add(parentGlobalPosition).rotatedAtPointUsing(
+                parent.getGlobalRotation().getEulerAngles(), 
+                parentGlobalPosition
+        );
+    }
+
+    /**
+     * Transforms a position vector that would be in the world space of this transform to
+     * a position vector in local space
+     * @param globalPosition The global position
+     * @return The world space position
+     */
+    public Vector3D inverseTransform(Vector3D globalPosition) {
+        if (parent == null) { return globalPosition; }
+
+        Vector3D parentGlobalPosition = parent.getGlobalPosition();
+        return globalPosition.rotatedInverseAtPointUsing(
+                parent.getGlobalRotation().getEulerAngles().scaledBy(-1),
+                parentGlobalPosition
+        ).subtract(parentGlobalPosition);
+    }
+    
+//=========   ====  == =
+//      AXIS PROPERTY
+//=========   ====  == =
+
+    /**
+     * Converts the position of the local axis to 
+     * @param axis The local axis to convert to world space
+     * @return The local axis in world space
+     */
+    public Vector3D getLocalAxis(Axis3D axis) {
+        return this.transform(axis.getUnitVector());
     }
     
 }

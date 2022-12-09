@@ -1,7 +1,9 @@
 ﻿package fr.wollfie.cottus.dto;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.dto.Articulation;
+import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 
 import java.util.List;
 
@@ -32,6 +34,10 @@ public interface CottusArm {
         List<Articulation> articulations = getArticulations();
         return articulations.get(articulations.size()-1);
     }
+    
+    /** @return The DH Parameters Table of the arm, used for inverse and forward kinematics */
+    @JsonSetter("dhTable")
+    DHTable getDHTable();
 
     /**
      * Finds the articulation in this arm with the specified name

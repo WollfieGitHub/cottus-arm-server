@@ -1,8 +1,7 @@
-﻿package fr.wollfie.cottus.utils.maths;
+﻿package fr.wollfie.cottus.utils.maths.matrices;
 
 import fr.wollfie.cottus.utils.Preconditions;
-
-import java.time.YearMonth;
+import fr.wollfie.cottus.utils.maths.Vector3D;
 
 public class Matrix {
     
