@@ -5,7 +5,7 @@ import fr.wollfie.cottus.utils.maths.Vector3D;
 
 public class Matrix {
     
-    private final double[][] values;
+    protected final double[][] values;
 
     /** Constructor for all values without specific dimensions*/
     public Matrix(double[][] values) { this.values = values; }
@@ -18,6 +18,9 @@ public class Matrix {
     ) {
         this(new double[][]{ {a00, a01, a02}, {a10, a11, a12}, {a20, a21, a22} });
     }
+    
+    /** @return The coefficient at line {@code i} and column {@code j} */
+    public double get(int i, int j) { return this.values[i][j]; }
     
     /** @return The width of the matrix */
     public int getWidth() { return getHeight() == 0 ? 0 : this.values[0].length; }

@@ -38,6 +38,9 @@ public interface CottusArm {
     /** @return The DH Parameters Table of the arm, used for inverse and forward kinematics */
     @JsonSetter("dhTable")
     DHTable getDHTable();
+    
+    /** @return The number of articulations, i.e., Degrees of freedom */
+    default int getNbOfArticulations() { return getArticulations().size(); }
 
     /**
      * Finds the articulation in this arm with the specified name

@@ -1,6 +1,7 @@
 ﻿package fr.wollfie.cottus.models.arm.positioning.kinematics;
 
 import fr.wollfie.cottus.utils.Preconditions;
+import fr.wollfie.cottus.utils.maths.matrices.HTMatrix;
 import fr.wollfie.cottus.utils.maths.matrices.Matrix;
 
 import static java.lang.Math.*;
@@ -47,12 +48,26 @@ public class DHTable {
      * @param i The index of the articulation
      * @return The transformation matrix
      */
-    public Matrix getTransformMatrix(int i) {
-        return new Matrix(new double[][]{
-                {               cos(theta[i]),              -sin(theta[i]),              0,               a[i] },
-                { cos(alpha[i])*sin(theta[i]), cos(alpha[i])*cos(theta[i]), -sin(alpha[i]), -d[i]*sin(alpha[i])},
-                { sin(alpha[i])*sin(theta[i]), sin(alpha[i])*cos(theta[i]),  cos(alpha[i]),  d[i]*cos(alpha[i])},
-                {                           0,                           0,              0,                  1 }
+    public HTMatrix getTransformMatrix(int i) {
+        return new HTMatrix(new double[][]{
+                {               cos(theta[i]),                  -sin(theta[i]),                0,               a[i-1] },
+                { cos(alpha[i-1])*sin(theta[i]), cos(alpha[i-1])*cos(theta[i]), -sin(alpha[i-1]), -d[i]*sin(alpha[i-1])},
+                { sin(alpha[i-1])*sin(theta[i]), sin(alpha[i-1])*cos(theta[i]),  cos(alpha[i-1]),  d[i]*cos(alpha[i-1])},
+                {                           0,                               0,                0,                    1 }
         });
+    }
+
+    /**
+     * @param from The index of the articulation with the source space
+     * @param to The index of the articulation with the destination space
+     * @return A transformation matrix that transforms {@code from}'s space into {@code to}'s space
+     */
+    public HTMatrix getTransformMatrix(int from, int to) {
+        Preconditions.checkArgument(from < to);
+        HTMatrix result = getTransformMatrix(from);
+        for (int i = from+1; i <= to; i++) {
+            result = result.multipliedBy(getTransformMatrix(i));
+        }
+        return result;
     }
 }
