@@ -1,10 +1,12 @@
 ﻿package fr.wollfie.cottus.models.arm.positioning.articulations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import fr.wollfie.cottus.dto.Articulation;
-import fr.wollfie.cottus.utils.maths.Axis3D;
+import fr.wollfie.cottus.dto.Joint;
+import fr.wollfie.cottus.models.arm.positioning.Transform;
 
-public class DrivenArticulation extends ArticulationImpl {
+import java.util.function.Consumer;
+
+public class DrivenJoint extends JointImpl {
     
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -12,7 +14,7 @@ public class DrivenArticulation extends ArticulationImpl {
 // ||                                                                                      ||
 // \\======================================================================================//
     
-    @JsonProperty("target") private Articulation target;
+    @JsonProperty("target") private Joint target;
     @JsonProperty("stepSize") private double stepSize;
     
 //=========   ====  == =
@@ -30,12 +32,13 @@ public class DrivenArticulation extends ArticulationImpl {
 // ||                                                                                      ||
 // \\======================================================================================//
     
-    public DrivenArticulation(
-            @JsonProperty("target") Articulation target,
-            @JsonProperty("parent") DrivenArticulation parent,
+    public DrivenJoint(
+            @JsonProperty("target") Joint target,
+            @JsonProperty("parent") DrivenJoint parent,
+            Consumer<Transform> transformInitFunction,
             @JsonProperty("stepSize") double stepSize
     ) {
-        super(String.format("%s_wrapper", target.getName()), parent, target.getAxis(), target.getLength());
+        super(String.format("%s_wrapper", target.getName()), parent, transformInitFunction);
         this.target = target;
         this.stepSize = stepSize;
     }
@@ -55,6 +58,6 @@ public class DrivenArticulation extends ArticulationImpl {
 //=========   ====  == =
     
     @Override
-    public Articulation getParent() { return null; }
+    public Joint getParent() { return null; }
     
 }

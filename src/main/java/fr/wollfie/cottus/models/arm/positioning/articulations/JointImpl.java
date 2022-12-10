@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.models.arm.positioning.Transform;
-import fr.wollfie.cottus.dto.Articulation;
+import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
@@ -13,7 +13,7 @@ import io.smallrye.common.constraint.Nullable;
 
 import java.util.function.Consumer;
 
-public class ArticulationImpl implements Articulation {
+public class JointImpl implements Joint {
     
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -33,10 +33,10 @@ public class ArticulationImpl implements Articulation {
 //      PARENT PROPERTY
 //=========   ====  == =
     
-    @Nullable protected final Articulation parent;
+    @Nullable protected final Joint parent;
     
     @Override @JsonGetter("parent")
-    public Articulation getParent() { return parent; }
+    public Joint getParent() { return parent; }
     
 //=========   ====  == =
 //      ARTICULATION PROPERTIES
@@ -67,9 +67,9 @@ public class ArticulationImpl implements Articulation {
 // ||                                                                                      ||
 // \\======================================================================================//
     
-    public ArticulationImpl(
+    public JointImpl(
             @JsonProperty("name") String name,
-            Articulation parent,
+            Joint parent,
             Consumer<Transform> transformInitFunction
     ) {
         this.parent = parent;

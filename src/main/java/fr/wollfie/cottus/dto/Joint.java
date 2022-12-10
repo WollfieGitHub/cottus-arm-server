@@ -3,11 +3,8 @@
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.models.arm.positioning.Transform;
-import fr.wollfie.cottus.utils.maths.Axis3D;
-import fr.wollfie.cottus.utils.maths.Vector3D;
-import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
-public interface Articulation {
+public interface Joint {
     
 //=========   ====  == =
 //      INFO PROPERTIES
@@ -34,7 +31,7 @@ public interface Articulation {
     /** @return The parent articulation of {@code null} if the 
      * articulation is the root */
     @JsonGetter("parent")
-    Articulation getParent();
+    Joint getParent();
     
 //=========   ====  == =
 //      ROTATION CONTROL

@@ -42,6 +42,11 @@ public class DHTable {
     public double getTheta(int i) { return this.theta[i]; }
     public double getAlpha(int i) { return this.alpha[i]; }
 
+    public void setD(int i, double value) { this.d[i] = value; }
+    public void setA(int i, double value) { this.a[i] = value; }
+    public void setTheta(int i, double value) { this.theta[i] = value; }
+    public void setAlpha(int i, double value) { this.alpha[i] = value; }
+
     /**
      * Return the transformation matrix which transforms 
      * articulation indexed i-1 to i
@@ -69,5 +74,10 @@ public class DHTable {
             result = result.multipliedBy(getTransformMatrix(i));
         }
         return result;
+    }
+    
+    /** Returns a copy of the DH Table */
+    public DHTable copy() {
+        return new DHTable(size, d, theta, a, alpha);
     }
 }

@@ -1,7 +1,7 @@
 ﻿package fr.wollfie.cottus.models.arm.cottus_arm;
 
 import fr.wollfie.cottus.dto.CottusArm;
-import fr.wollfie.cottus.dto.Articulation;
+import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
 public class DrivenCottusArm implements CottusArm {
     
     @Override
-    public List<Articulation> getArticulations() {
+    public List<Joint> getArticulations() {
         return null;
     }
 
