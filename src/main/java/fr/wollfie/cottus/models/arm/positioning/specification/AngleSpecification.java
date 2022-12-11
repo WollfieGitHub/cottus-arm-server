@@ -3,7 +3,6 @@
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.dto.ArmSpecification;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -12,7 +11,7 @@ import java.util.List;
  */
 public class AngleSpecification implements ArmSpecification {
     
-    private final double[] angles;
+    private final List<Double> angles;
 
     public AngleSpecification(
             @JsonProperty("a0") double a0,
@@ -25,5 +24,5 @@ public class AngleSpecification implements ArmSpecification {
     ) { this.angles = new double[]{ a0, a1, a2, a3, a4, a5, a6 }; }
 
     @Override
-    public double[] getAngles() { return this.angles; }
+    public List<Double> getAngles() { return this.angles; }
 }

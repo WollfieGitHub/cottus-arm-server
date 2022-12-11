@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import fr.wollfie.cottus.dto.JointBounds;
+import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.models.arm.positioning.Transform;
 import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.utils.maths.Axis3D;
@@ -26,6 +28,7 @@ public class JointImpl implements Joint {
 //=========   ====  == =
     
     @JsonIgnore protected final Transform transform;
+
     @Override @JsonGetter("transform") 
     public Transform getTransform() { return this.transform; }
 
@@ -41,7 +44,12 @@ public class JointImpl implements Joint {
 //=========   ====  == =
 //      ARTICULATION PROPERTIES
 //=========   ====  == =
-    
+
+    private final JointBounds bounds;
+
+    @Override
+    public JointBounds getBounds() { return bounds; }
+
     @Override @JsonGetter("angleRad")
     public double getAngleRad() { 
         // This works given that the articulation only rotates around one axis
@@ -49,7 +57,9 @@ public class JointImpl implements Joint {
     }
 
     @Override @JsonSetter("angleRad")
-    public void setAngleRad(double angleRad) { 
+    public void setAngleRad(double angleRad) throws AngleOutOfBoundsException {
+        if (!bounds.isInBounds(angleRad)) { throw new AngleOutOfBoundsException(); }
+        
         this.transform.setLocalRotation(Rotation.from(Axis3D.Z.getUnitVector().scaledBy(angleRad)));
     }
     
@@ -69,9 +79,10 @@ public class JointImpl implements Joint {
     
     public JointImpl(
             @JsonProperty("name") String name,
-            Joint parent,
+            Joint parent, JointBounds bounds, 
             Consumer<Transform> transformInitFunction
     ) {
+        this.bounds = bounds;
         this.parent = parent;
         this.name = name;
         this.transform = parent == null

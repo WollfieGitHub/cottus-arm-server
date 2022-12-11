@@ -1,6 +1,7 @@
 ﻿package fr.wollfie.cottus.services;
 
 import fr.wollfie.cottus.dto.ArmSpecification;
+import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.utils.maths.Vector3D;
@@ -11,10 +12,10 @@ public interface ArmControllerService {
     /**
      * Move the arm using the angles found in the given specifications.
      * @param specification A specification of all dofs of the arm
-     * @throws NoSolutionException if one of the specification is not in bounds with the 
+     * @throws AngleOutOfBoundsException if one of the specification is not in bounds with the 
      * maximum/minimum angles of the robot
      */
-    void moveGiven(ArmSpecification specification) throws NoSolutionException;
+    void moveGiven(ArmSpecification specification) throws AngleOutOfBoundsException;
     
     /**
      * Move the end effector to the specified position, while keeping the elbow at the same place if possible.

@@ -37,7 +37,7 @@ public class CachedDHTable extends DHTable{
 //=========   ====  == =
     
     public CachedDHTable(int size, double[] d, double[] theta, double[] a, double[] alpha) {
-        super(size, d, theta, a, alpha);
+        super(d, a, theta, alpha);
     }
 
 //=========   ====  == =

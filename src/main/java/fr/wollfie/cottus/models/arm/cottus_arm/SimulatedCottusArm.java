@@ -2,23 +2,29 @@
 
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.Joint;
+import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
+import fr.wollfie.cottus.utils.Preconditions;
 
 import java.util.List;
 
 /**
- * The simulated cottus arm, its movement speed is infinite and 
+ * The simulated cottus arm, its movement speed is infinite and
  * its position is controlled live by the user.
  */
-public class SimulatedCottusArm implements CottusArm {
-    
-    @Override
-    public List<Joint> getArticulations() {
-        return null;
-    }
+public record SimulatedCottusArm(
+        List<Joint> joints, DHTable dhTable
+) implements CottusArm {
 
     @Override
     public DHTable getDHTable() {
-        return null;
+        return dhTable;
+    }
+
+    @Override
+    public void setAngles(List<Double> anglesRad) throws AngleOutOfBoundsException {
+        Preconditions.checkArgument(anglesRad.size() == joints.size());
+        int i = 0;
+        for (Joint j : joints) { j.setAngleRad(anglesRad.get(i)); i++; }
     }
 }

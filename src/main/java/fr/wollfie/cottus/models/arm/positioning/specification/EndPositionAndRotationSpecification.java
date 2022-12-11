@@ -4,6 +4,8 @@ import fr.wollfie.cottus.dto.ArmSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
+import java.util.List;
+
 public class EndPositionAndRotationSpecification implements ArmSpecification {
 
     private final double endEffectorAngleRad;
@@ -18,10 +20,10 @@ public class EndPositionAndRotationSpecification implements ArmSpecification {
     }
     
     @Override
-    public double[] getAngles() {
-        double[] angles = new double[7];
+    public List<Double> getAngles() {
+        List<Double> angles = new double[7];
         
-        angles[6] = endEffectorAngleRad;
+        angles.set(6, endEffectorAngleRad);
         return angles;
     }
 }

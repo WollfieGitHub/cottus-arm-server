@@ -24,14 +24,13 @@ public class DHTable {
     
     private final int size;
 
-    public DHTable(int size, double[] d, double[] theta, double[] a, double[] alpha) {
-        Preconditions.checkArgument(d.length == size);
+    public DHTable(double[] d, double[] a, double[] theta, double[] alpha) {
+        this.size = d.length;
         Preconditions.checkArgument(a.length == size);
         Preconditions.checkArgument(alpha.length == size);
         Preconditions.checkArgument(theta.length == size);
         
         this.d = d;this.theta = theta;this.a = a;this.alpha = alpha;
-        this.size = size;
     }
 
     /** @return The size of the DH Table, i.e., the number of articulations */
@@ -78,6 +77,6 @@ public class DHTable {
     
     /** Returns a copy of the DH Table */
     public DHTable copy() {
-        return new DHTable(size, d, theta, a, alpha);
+        return new DHTable(d, a, theta, alpha);
     }
 }

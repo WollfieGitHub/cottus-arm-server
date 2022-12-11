@@ -16,7 +16,7 @@ import java.util.List;
 public class DrivenCottusArm implements CottusArm {
     
     @Override
-    public List<Joint> getArticulations() {
+    public List<Joint> joints() {
         return null;
     }
 
@@ -24,4 +24,7 @@ public class DrivenCottusArm implements CottusArm {
     public DHTable getDHTable() {
         return null;
     }
+
+    @Override
+    public void setAngles(List<Double> anglesRad) { }
 }
