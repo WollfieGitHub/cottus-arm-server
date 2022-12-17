@@ -1,10 +1,11 @@
-﻿package fr.wollfie.cottus.models.arm.positioning.articulations;
+package fr.wollfie.cottus.models.arm.positioning.joints;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.wollfie.cottus.dto.JointBounds;
 
 public record SimpleJointBounds(
-        double minRad,
-        double maxRad
+        @JsonIgnore double minRad,
+        @JsonIgnore double maxRad
 ) implements JointBounds {
 
     /**
@@ -14,7 +15,7 @@ public record SimpleJointBounds(
      * @return The bounds for the joint
      */
     public static SimpleJointBounds fromDeg(double minDeg, double maxDeg) {
-        return new SimpleJointBounds(Math.toDegrees(minDeg), Math.toDegrees(maxDeg));
+        return new SimpleJointBounds(Math.toRadians(minDeg), Math.toRadians(maxDeg));
     }
 
     @Override public double getLowerBound() { return minRad; }

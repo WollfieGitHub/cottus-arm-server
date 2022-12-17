@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.services;
+package fr.wollfie.cottus.services;
 
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.JointBounds;

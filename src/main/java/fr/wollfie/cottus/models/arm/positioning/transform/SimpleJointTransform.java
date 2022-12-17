@@ -1,16 +1,17 @@
-﻿package fr.wollfie.cottus.models.arm.positioning;
+package fr.wollfie.cottus.models.arm.positioning.transform;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import fr.wollfie.cottus.dto.JointTransform;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector3D;
-import fr.wollfie.cottus.utils.maths.matrices.Matrix;
+import fr.wollfie.cottus.utils.maths.matrices.HTMatrix;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.common.constraint.NotNull;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
-public class Transform {
+public class SimpleJointTransform implements JointTransform {
     
 //=========   ====  == =
 //      PARENT PROPERTY
@@ -19,35 +20,30 @@ public class Transform {
     /** The parent transform this transform depends on.
      * Can be null, in which case its position is interpreted as the one relative
      * to the world's origin */
-    @JsonProperty("parent") public final Transform parent;
+    @JsonProperty("parent") public final SimpleJointTransform parent;
 
 //=========   ====  == =
 //      CONSTRUCTORS 
 //=========   ====  == =
     
-    private Transform(
-            @JsonProperty("parent") Transform parent
-    ) { this.parent = parent; }
+    private SimpleJointTransform(@JsonProperty("parent") SimpleJointTransform parent) { this.parent = parent; }
     
     /** @return A new transform with the specified parent, i.e., its local position
      * is relative to the given parent */
-    public static Transform createFrom(@NotNull Transform parent) { return new Transform(parent); }
+    public static SimpleJointTransform createFrom(@NotNull SimpleJointTransform parent) { return new SimpleJointTransform(parent); }
     
     /** @return A new transform with parent set to null, i.e., its local position is
      * relative to the world's origin */
-    public static Transform createFromRoot() { return new Transform(null); }
+    public static SimpleJointTransform createFromRoot() { return new SimpleJointTransform(null); }
 
     /**
      * Use the given transformation matrix to position this transform 
      * @param parentToChild The transformation matrix which, from a point in {@code this} local space
      *                     will transform the point in the child's local space
      */
-    public void setTransform(Matrix parentToChild) {
-        this.localPosition = parentToChild.multipliedBy(Vector3D.Zero());
-        double thetaX = Axis3D.X.getUnitVector().angleTo(parentToChild.multipliedBy(Axis3D.X.getUnitVector()));
-        double thetaY = Axis3D.Y.getUnitVector().angleTo(parentToChild.multipliedBy(Axis3D.Y.getUnitVector()));
-        double thetaZ = Axis3D.Z.getUnitVector().angleTo(parentToChild.multipliedBy(Axis3D.Z.getUnitVector()));
-        this.localRotation = Rotation.from(Vector3D.of(thetaX, thetaY, thetaZ));
+    public void setTransform(HTMatrix parentToChild) {
+        this.localPosition = parentToChild.extractTranslation();
+        this.localRotation = Rotation.from(parentToChild.extractRotation());
     }
 
 //=========   ====  == =
@@ -124,11 +120,9 @@ public class Transform {
     public Vector3D transform(Vector3D localPosition) {
         if (parent == null) { return localPosition; }
 
-        Vector3D parentGlobalPosition = parent.getGlobalPosition();
-        return localPosition.add(parentGlobalPosition).rotatedAtPointUsing(
-                parent.getGlobalRotation().getEulerAngles(), 
-                parentGlobalPosition
-        );
+        Vector3D parentGlobalPosition = parent.getGlobalPosition() ;
+        return localPosition.rotatedAtOriginUsing(parent.getGlobalRotation().getEulerAngles())
+                .add(parentGlobalPosition);
     }
 
     /**
@@ -141,12 +135,21 @@ public class Transform {
         if (parent == null) { return globalPosition; }
 
         Vector3D parentGlobalPosition = parent.getGlobalPosition();
-        return globalPosition.rotatedInverseAtPointUsing(
-                parent.getGlobalRotation().getEulerAngles().scaledBy(-1),
-                parentGlobalPosition
-        ).subtract(parentGlobalPosition);
+        return globalPosition.subtract(parentGlobalPosition).rotatedInverseAtOriginUsing(
+                parent.getGlobalRotation().getEulerAngles()
+        );
     }
-    
+
+    @Override
+    public void setAngle(double angleRad) {
+        setLocalRotation(Rotation.from(Axis3D.Z.scaledBy(angleRad)));
+    }
+
+    @Override
+    public double getAngle() {
+        return getLocalRotation().getEulerAngles().z;
+    }
+
 //=========   ====  == =
 //      AXIS PROPERTY
 //=========   ====  == =
@@ -156,8 +159,6 @@ public class Transform {
      * @param axis The local axis to convert to world space
      * @return The local axis in world space
      */
-    public Vector3D getLocalAxis(Axis3D axis) {
-        return this.transform(axis.getUnitVector());
-    }
+    public Vector3D getLocalAxis(Axis3D axis) { return this.transform(axis.unitVector); }
     
 }

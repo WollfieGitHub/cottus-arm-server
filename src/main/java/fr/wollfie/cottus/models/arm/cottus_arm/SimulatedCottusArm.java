@@ -1,5 +1,6 @@
-﻿package fr.wollfie.cottus.models.arm.cottus_arm;
+package fr.wollfie.cottus.models.arm.cottus_arm;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
@@ -16,15 +17,18 @@ public record SimulatedCottusArm(
         List<Joint> joints, DHTable dhTable
 ) implements CottusArm {
 
-    @Override
-    public DHTable getDHTable() {
-        return dhTable;
-    }
+    @Override @JsonIgnore
+    public DHTable getDHTable() { return dhTable; }
 
     @Override
     public void setAngles(List<Double> anglesRad) throws AngleOutOfBoundsException {
         Preconditions.checkArgument(anglesRad.size() == joints.size());
         int i = 0;
         for (Joint j : joints) { j.setAngleRad(anglesRad.get(i)); i++; }
+    }
+
+    @Override
+    public void setAngle(int jointIndex, double angleRad) throws AngleOutOfBoundsException {
+        joints.get(jointIndex).setAngleRad(angleRad);
     }
 }

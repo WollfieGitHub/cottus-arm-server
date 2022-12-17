@@ -1,19 +1,18 @@
-﻿package fr.wollfie.cottus.models.arm.positioning.articulations;
+package fr.wollfie.cottus.models.arm.positioning.joints;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.dto.JointBounds;
+import fr.wollfie.cottus.dto.JointTransform;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
-import fr.wollfie.cottus.models.arm.positioning.Transform;
+import fr.wollfie.cottus.models.arm.positioning.transform.DHBasedJointTransform;
 import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.common.constraint.Nullable;
-
-import java.util.function.Consumer;
 
 public class JointImpl implements Joint {
     
@@ -27,49 +26,41 @@ public class JointImpl implements Joint {
 //      TRANSFORM PROPERTY
 //=========   ====  == =
     
-    @JsonIgnore protected final Transform transform;
-
-    @Override @JsonGetter("transform") 
-    public Transform getTransform() { return this.transform; }
+    @JsonIgnore protected final JointTransform transform;
+    @Override public JointTransform getTransform() { return this.transform; }
 
 //=========   ====  == =
 //      PARENT PROPERTY
 //=========   ====  == =
     
     @Nullable protected final Joint parent;
-    
-    @Override @JsonGetter("parent")
-    public Joint getParent() { return parent; }
+    @Override public Joint getParent() { return parent; }
     
 //=========   ====  == =
+//      VIRTUAL PROPERTY
+//=========   ====  == =
+    
+    protected final boolean virtual;
+    @Override public boolean isVirtual() { return virtual; }
+
+    //=========   ====  == =
 //      ARTICULATION PROPERTIES
 //=========   ====  == =
 
     private final JointBounds bounds;
+    @Override public JointBounds getBounds() { return bounds; }
 
+    @Override public double getAngleRad() { return this.transform.getAngle(); } 
+    
     @Override
-    public JointBounds getBounds() { return bounds; }
-
-    @Override @JsonGetter("angleRad")
-    public double getAngleRad() { 
-        // This works given that the articulation only rotates around one axis
-        return this.transform.getLocalRotation().getEulerAngles().norm();
-    }
-
-    @Override @JsonSetter("angleRad")
     public void setAngleRad(double angleRad) throws AngleOutOfBoundsException {
         if (!bounds.isInBounds(angleRad)) { throw new AngleOutOfBoundsException(); }
         
-        this.transform.setLocalRotation(Rotation.from(Axis3D.Z.getUnitVector().scaledBy(angleRad)));
+        this.transform.setAngle(angleRad);
     }
     
-    @JsonGetter("length") public double getLength() { 
-        if (parent == null) { return Vector3D.Zero().distanceTo(this.transform.getLocalPosition()); }
-        return this.parent.getTransform().getGlobalPosition().distanceTo(this.transform.getGlobalPosition());
-    }
-    
-    @JsonProperty("name") private final String name;
-    @JsonGetter("name") public String getName() { return name; }
+    private final String name;
+    @Override public String getName() { return name; }
 
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -79,16 +70,15 @@ public class JointImpl implements Joint {
     
     public JointImpl(
             @JsonProperty("name") String name,
-            Joint parent, JointBounds bounds, 
-            Consumer<Transform> transformInitFunction
+            Joint parent, JointBounds bounds,
+            JointTransform transform,
+            boolean virtual
     ) {
         this.bounds = bounds;
         this.parent = parent;
         this.name = name;
-        this.transform = parent == null
-                ? Transform.createFromRoot()
-                : Transform.createFrom(parent.getTransform());
-        transformInitFunction.accept(this.transform);
+        this.virtual = virtual;
+        this.transform = transform;
     }
     
 }

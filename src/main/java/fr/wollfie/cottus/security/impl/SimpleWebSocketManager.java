@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.security.impl;
+package fr.wollfie.cottus.security.impl;
 
 import fr.wollfie.cottus.security.WebsocketTokenManager;
 import io.vertx.core.impl.ConcurrentHashSet;

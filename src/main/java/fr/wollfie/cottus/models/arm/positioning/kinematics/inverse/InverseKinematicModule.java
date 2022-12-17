@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
+package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
 
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.exception.NoSolutionException;
@@ -62,9 +62,9 @@ public class InverseKinematicModule {
             Vector3D endEffectorPosition,
             Rotation endEffectorRotation
     ) throws NoSolutionException {
-        Vector3D nRight = Axis3D.X.getUnitVector().rotatedAtOriginUsing(endEffectorRotation.getEulerAngles());
-        Vector3D nDir = Axis3D.Z.getUnitVector().rotatedAtOriginUsing(endEffectorRotation.getEulerAngles());
-        Vector3D nUp = Axis3D.Y.getUnitVector().rotatedAtOriginUsing(endEffectorRotation.getEulerAngles());
+        Vector3D nRight = Axis3D.X.rotatedAtOriginUsing(endEffectorRotation.getEulerAngles());
+        Vector3D nDir = Axis3D.Z.rotatedAtOriginUsing(endEffectorRotation.getEulerAngles());
+        Vector3D nUp = Axis3D.Y.rotatedAtOriginUsing(endEffectorRotation.getEulerAngles());
         
         // Copy the DH Table so that the arm's isn't actually modified
         DHTable dhTable = arm.getDHTable().copy();

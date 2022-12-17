@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.utils;
+package fr.wollfie.cottus.utils;
 
 public class Preconditions {
     private Preconditions() {}

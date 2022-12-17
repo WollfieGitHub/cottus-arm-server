@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.utils;
+package fr.wollfie.cottus.utils;
 
 import static fr.wollfie.cottus.utils.Constants.EPSILON;
 

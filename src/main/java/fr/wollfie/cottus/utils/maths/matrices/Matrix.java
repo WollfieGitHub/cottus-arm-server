@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.utils.maths.matrices;
+package fr.wollfie.cottus.utils.maths.matrices;
 
 import fr.wollfie.cottus.utils.Preconditions;
 import fr.wollfie.cottus.utils.maths.Vector3D;
@@ -53,9 +53,9 @@ public class Matrix {
         Preconditions.checkArgument(this.getWidth() == 3);
         Preconditions.checkArgument(this.getHeight() == 3);
         
-        double x = values[0][0]*that.x + values[0][1]*that.y + values[0][1]*that.x;
-        double y = values[1][0]*that.x + values[1][1]*that.y + values[1][1]*that.x;
-        double z = values[2][0]*that.x + values[2][1]*that.y + values[2][1]*that.x;
+        double x = values[0][0]*that.x + values[0][1]*that.y + values[0][2]*that.z;
+        double y = values[1][0]*that.x + values[1][1]*that.y + values[1][2]*that.z;
+        double z = values[2][0]*that.x + values[2][1]*that.y + values[2][2]*that.z;
         return Vector3D.of(x, y, z);
     }
 }

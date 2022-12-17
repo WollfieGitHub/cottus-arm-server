@@ -1,9 +1,10 @@
-﻿package fr.wollfie.cottus.models.arm.positioning.specification;
+package fr.wollfie.cottus.models.arm.positioning.specification;
 
 import fr.wollfie.cottus.dto.ArmSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EndPositionAndRotationSpecification implements ArmSpecification {
@@ -21,7 +22,7 @@ public class EndPositionAndRotationSpecification implements ArmSpecification {
     
     @Override
     public List<Double> getAngles() {
-        List<Double> angles = new double[7];
+        List<Double> angles = new ArrayList<>();
         
         angles.set(6, endEffectorAngleRad);
         return angles;

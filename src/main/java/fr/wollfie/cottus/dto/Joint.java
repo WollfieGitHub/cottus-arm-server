@@ -1,9 +1,8 @@
-﻿package fr.wollfie.cottus.dto;
+package fr.wollfie.cottus.dto;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
-import fr.wollfie.cottus.models.arm.positioning.Transform;
 
 public interface Joint {
     
@@ -11,19 +10,18 @@ public interface Joint {
 //      INFO PROPERTIES
 //=========   ====  == =
     
-    /** @return The length in mm of the articulation between the rotation point and the rotation point
-     * of its child
-     * */
-    @JsonGetter("length")
-    double getLength();
-    
     /** @return The name of the articulation */
     @JsonGetter("name")
     String getName();
     
     /** @return The transform of the articulation */
     @JsonGetter("transform")
-    Transform getTransform();
+    JointTransform getTransform();
+    
+    /** @return True if this joint only exist of the need of the modelisation by the 
+     * DH parameters */
+    @JsonGetter("virtual")
+    boolean isVirtual();
     
 //=========   ====  == =
 //      PARENT PROPERTY

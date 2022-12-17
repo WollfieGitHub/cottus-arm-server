@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.security;
+package fr.wollfie.cottus.security;
 
 import javax.ws.rs.core.SecurityContext;
 

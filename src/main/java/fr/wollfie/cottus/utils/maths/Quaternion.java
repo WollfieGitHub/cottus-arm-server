@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.utils.maths;
+package fr.wollfie.cottus.utils.maths;
 
 public interface Quaternion {
 

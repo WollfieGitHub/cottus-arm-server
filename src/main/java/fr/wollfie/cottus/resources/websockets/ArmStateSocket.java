@@ -1,13 +1,14 @@
-﻿package fr.wollfie.cottus.resources.websockets;
+package fr.wollfie.cottus.resources.websockets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wollfie.cottus.security.WebsocketTokenManager;
+import fr.wollfie.cottus.services.ArmControllerService;
 import io.quarkus.logging.Log;
 import io.quarkus.security.UnauthorizedException;
-import io.quarkus.vertx.ConsumeEvent;
 
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -19,16 +20,18 @@ import java.util.concurrent.ConcurrentHashMap;
  * General purpose sock which broadcasts the state of the system everytime
  * a STATE_CHANGED event is fired
  */
-@ServerEndpoint(value = "/main-socket/{token}")
-public class Socket {
+@ApplicationScoped
+@ServerEndpoint(value = "/api/arm-state-socket/{token}")
+public class ArmStateSocket {
 
     private final Map<String, Session> connectedClients = new ConcurrentHashMap<>();
 
-    @Inject
-    WebsocketTokenManager tokenManager;
+    @Inject WebsocketTokenManager tokenManager;
+    @Inject ArmControllerService armControllerService;
 
     @OnOpen
     public void onOpen(Session session, @PathParam("token") String token) {
+        Log.info("Open...");
         if (tokenManager.validate(token)) {
             Log.debugf("onOpen> Client connected with token : \"%s\"", token);
             connectedClients.put(token, session);
@@ -68,16 +71,14 @@ public class Socket {
                 " unauthorized token : \"%s\"", context, token));
     }
 
-    @Inject
-    ObjectMapper defaultObjectMapper;
+    @Inject ObjectMapper defaultObjectMapper;
 
-    // @ConsumeEvent(EventTopics.STATE_UPDATE)
-    public void broadcast(double timeSec) {
+    public void broadCastArmState() {
         // Broadcast a change of state in the system
         connectedClients.values().forEach(client -> {
-            // try {
-            //      client.getAsyncRemote().sendObject(defaultObjectMapper.writeValueAsString(stateManager.getState()));
-            // } catch (JsonProcessingException e) { throw new RuntimeException(e); }
+            try {
+                 client.getAsyncRemote().sendObject(defaultObjectMapper.writeValueAsString(armControllerService.getArmState()));
+            } catch (JsonProcessingException e) { throw new RuntimeException(e); }
         } );
     }
 }

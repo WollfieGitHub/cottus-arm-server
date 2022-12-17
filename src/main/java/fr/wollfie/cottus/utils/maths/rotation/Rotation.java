@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.utils.maths.rotation;
+package fr.wollfie.cottus.utils.maths.rotation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.utils.maths.Quaternion;

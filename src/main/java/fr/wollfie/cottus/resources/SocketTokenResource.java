@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.resources;
+package fr.wollfie.cottus.resources;
 
 import fr.wollfie.cottus.security.WebsocketTokenManager;
 

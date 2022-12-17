@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.models.animation;
+package fr.wollfie.cottus.models.animation;
 
 import fr.wollfie.cottus.dto.ArmSpecification;
 

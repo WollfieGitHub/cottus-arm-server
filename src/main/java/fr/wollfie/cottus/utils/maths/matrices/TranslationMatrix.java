@@ -1,8 +1,11 @@
-﻿package fr.wollfie.cottus.utils.maths.matrices;
+package fr.wollfie.cottus.utils.maths.matrices;
 
 import fr.wollfie.cottus.utils.Preconditions;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
+
+import static fr.wollfie.cottus.utils.maths.Axis3D.X;
+import static fr.wollfie.cottus.utils.maths.Axis3D.Y;
 
 public class TranslationMatrix extends Matrix {
 
@@ -36,15 +39,13 @@ public class TranslationMatrix extends Matrix {
                     1, 0, 0, distance,
                     0, 1, 0, 0,
                     0, 0, 1, 0,
-                    0, 0, 0, 1
-            );
+                    0, 0, 0, 1);
             case Y -> throw new NotImplementedYet();
             case Z -> new TranslationMatrix(
                     1, 0, 0, 0,
                     0, 1, 1, 0,
                     0, 1, 1, distance,
-                    0, 0, 0, 1
-            );
+                    0, 0, 0, 1);
         };
     }
 }

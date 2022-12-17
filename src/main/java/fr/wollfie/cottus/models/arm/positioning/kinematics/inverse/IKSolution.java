@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
+package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
 
 public class IKSolution {
 

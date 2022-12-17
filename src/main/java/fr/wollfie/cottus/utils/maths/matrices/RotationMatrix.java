@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.utils.maths.matrices;
+package fr.wollfie.cottus.utils.maths.matrices;
 
 import fr.wollfie.cottus.utils.Preconditions;
 import fr.wollfie.cottus.utils.maths.Axis3D;
@@ -37,15 +37,13 @@ public class RotationMatrix extends Matrix{
                     1, 0, 0, 0,
                     0, cos(angleRad), -sin(angleRad), 0,
                     0, sin(angleRad), cos(angleRad), 0,
-                    0, 0, 0, 1
-            );
+                    0, 0, 0, 1);
             case Y -> throw new NotImplementedYet();
             case Z -> new RotationMatrix(
                     cos(angleRad), -sin(angleRad), 0, 0,
                     sin(angleRad), cos(angleRad), 0, 0,
                     0, 0, 1, 0,
-                    0, 0, 0, 1
-            );
+                    0, 0, 0, 1);
         };
     }
 }

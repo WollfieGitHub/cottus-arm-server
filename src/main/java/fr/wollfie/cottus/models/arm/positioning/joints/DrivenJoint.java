@@ -1,10 +1,9 @@
-﻿package fr.wollfie.cottus.models.arm.positioning.articulations;
+package fr.wollfie.cottus.models.arm.positioning.joints;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.dto.Joint;
-import fr.wollfie.cottus.models.arm.positioning.Transform;
-
-import java.util.function.Consumer;
+import fr.wollfie.cottus.dto.JointBounds;
+import fr.wollfie.cottus.dto.JointTransform;
 
 public class DrivenJoint extends JointImpl {
     
@@ -35,10 +34,11 @@ public class DrivenJoint extends JointImpl {
     public DrivenJoint(
             @JsonProperty("target") Joint target,
             @JsonProperty("parent") DrivenJoint parent,
-            Consumer<Transform> transformInitFunction,
+            JointBounds bounds,
+            JointTransform transform,
             @JsonProperty("stepSize") double stepSize
     ) {
-        super(String.format("%s_wrapper", target.getName()), parent, transformInitFunction);
+        super(String.format("%s_wrapper", target.getName()), parent, bounds, transform, target.isVirtual());
         this.target = target;
         this.stepSize = stepSize;
     }

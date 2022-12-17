@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.exception;
+package fr.wollfie.cottus.exception;
 
 /** Used when there is no found solution to a problem. Often means
  * that the operation depending on the resolution of the problem has

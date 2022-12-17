@@ -1,2 +1,6 @@
-cottus-arm:
-  dof: 7
+quarkus:
+  http:
+    cors: true
+  banner:
+    enabled: true
+    path: "banner.txt"

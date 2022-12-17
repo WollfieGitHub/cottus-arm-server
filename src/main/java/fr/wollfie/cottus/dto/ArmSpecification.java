@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.dto;
+package fr.wollfie.cottus.dto;
 
 import java.util.List;
 

@@ -1,9 +1,11 @@
-﻿package fr.wollfie.cottus.utils.maths;
+package fr.wollfie.cottus.utils.maths;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.utils.Constants;
 import fr.wollfie.cottus.utils.Utils;
 
+import static fr.wollfie.cottus.utils.maths.Axis3D.*;
 import static java.lang.Math.*;
 
 public class Vector3D {
@@ -12,10 +14,10 @@ public class Vector3D {
     @JsonProperty("y") public final double y;
     @JsonProperty("z") public final double z;
     
-    private Vector3D(
-            @JsonProperty("x") double x,
-            @JsonProperty("y") double y,
-            @JsonProperty("z") double z
+    Vector3D(
+        @JsonProperty("x") double x,
+        @JsonProperty("y") double y,
+        @JsonProperty("z") double z
     ) {
         this.x = x;
         this.y = y;
@@ -33,6 +35,7 @@ public class Vector3D {
     }
 
     /** @return True if the vector is zero, false otherwise */
+    @JsonIgnore
     public boolean isZero() {
         return Utils.isZero(x)
                 && Utils.isZero(y)
@@ -108,7 +111,7 @@ public class Vector3D {
     }
 
     public Vector3D rotatedAtOriginUsing(Vector3D eulerAngles) {
-        return this.rotatedAtOriginAround(Axis3D.X, eulerAngles.x)
+        return this.rotatedAtOriginAround(X, eulerAngles.x)
                 .rotatedAtOriginAround(Axis3D.Y, eulerAngles.y)
                 .rotatedAtOriginAround(Axis3D.Z, eulerAngles.z);
     }
@@ -116,7 +119,7 @@ public class Vector3D {
     public Vector3D rotatedInverseAtOriginUsing(Vector3D eulerAngles) {
         return this.rotatedAtOriginAround(Axis3D.Z, -eulerAngles.z)
                 .rotatedAtOriginAround(Axis3D.Y, -eulerAngles.y)
-                .rotatedAtOriginAround(Axis3D.X, -eulerAngles.x);
+                .rotatedAtOriginAround(X, -eulerAngles.x);
     }
 
     public Vector3D rotatedInverseAtPointUsing(Vector3D eulerAngles, Vector3D rotationPoint) {
@@ -141,7 +144,7 @@ public class Vector3D {
     
     /** @return The angle in radians between {@code this} vector and {@code that} vector */
     public double angleTo(Vector3D that) {
-        return acos(this.dot(that));
+        return acos(this.normalized().dot(that.normalized()));
     }
 
     /** @return The distance in mm between {@code this} vector and {@code that} vector */
