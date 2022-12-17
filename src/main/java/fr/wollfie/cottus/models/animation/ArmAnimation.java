@@ -1,10 +1,9 @@
 package fr.wollfie.cottus.models.animation;
 
 import fr.wollfie.cottus.dto.ArmSpecification;
+import fr.wollfie.cottus.models.animation.pathing.LineToAnimation;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
-
-import javax.el.StaticFieldELResolver;
 
 public interface ArmAnimation {
 
@@ -92,7 +91,7 @@ public interface ArmAnimation {
      * @return The lineTo animation
      */
     static ArmAnimation lineTo(Vector3D position, double timeSec) {
-        throw new NotImplementedYet();
+        return new LineToAnimation(position, timeSec);
     }
 
     /**
