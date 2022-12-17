@@ -1,6 +1,10 @@
 package fr.wollfie.cottus.models.animation;
 
 import fr.wollfie.cottus.dto.ArmSpecification;
+import fr.wollfie.cottus.utils.maths.Vector3D;
+import org.jboss.resteasy.reactive.common.NotImplementedYet;
+
+import javax.el.StaticFieldELResolver;
 
 public interface ArmAnimation {
 
@@ -64,5 +68,69 @@ public interface ArmAnimation {
                 return first.isPlaying() || second.isPlaying();
             }
         };
+    }
+
+    /**
+     * Saves the animation to ...
+     */
+    default void save() {
+        // TODO
+    }
+    
+// //======================================================================================\\
+// ||                                                                                      ||
+// ||                                       TODO DEFAULT PATH                              ||
+// ||                                                                                      ||
+// \\======================================================================================//
+
+    /**
+     * Interpolate as a line between the current position and the given position in 3D space,
+     * within the given time frame
+     * @param position The end position in 3D space
+     * @param timeSec The time to take between the position at the beginning of the animation
+     *                and the end
+     * @return The lineTo animation
+     */
+    static ArmAnimation lineTo(Vector3D position, double timeSec) {
+        throw new NotImplementedYet();
+    }
+
+    /**
+     * Interpolate as a Bézier curve between the current position and the given position in 3D space,
+     * with the given point as anchors for the Bézier curve within the given time frame
+     * @param endPosition The end position in 3D space
+     * @param timeSec The time to take between the position at the beginning of the animation
+     *                and the end
+     * @param anchorPoints The anchor points for the curve
+     * @return The lineTo animation
+     */
+    static ArmAnimation bezierTo(Vector3D endPosition, double timeSec, Vector3D... anchorPoints) {
+        throw new NotImplementedYet();
+    }
+
+    /**
+     * <p>Interpolate as a semicircle between the current position and the given position in 3D space,
+     * within the given time frame in seconds.
+     * <br><br>The center of the point will be chosen such that the begin and end position are the begin and
+     * end of the {@code angleDeg} rotation of the circle. For example, the midpoint between the beginning 
+     * position and end position will be designated as the center of the circle if the parameter {@code angleDeg} is set to pi/2.
+     * <br><br>The tangent at the beginning point of the circle will point towards the specified {@code circleDirection}
+     *   parameter. For example, if the direction is up, the circle's normal will be pointing towards the right or down</p>
+     * @param endPosition The end position in 3D space
+     * @param timeSec The time to take between the position at the beginning of the animation
+     *                and the end
+     * @return The lineTo animation
+     */
+    static ArmAnimation semiCircleTo(Vector3D endPosition, double timeSec, double angleDeg, Vector3D circleDirection) {
+        throw new NotImplementedYet();
+    }
+
+    /**
+     * The arm will wait at its current location during the time frame specified in seconds
+     * @param timeSec The time for which the arm will wait
+     * @return The wait animation
+     */
+    static ArmAnimation waitDuring(double timeSec) {
+        throw new NotImplementedYet();
     }
 }
