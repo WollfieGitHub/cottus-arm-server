@@ -1,6 +1,5 @@
-package fr.wollfie.cottus.models.animation;
+package fr.wollfie.cottus.dto;
 
-import fr.wollfie.cottus.dto.ArmSpecification;
 import fr.wollfie.cottus.models.animation.pathing.LineToAnimation;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
@@ -19,11 +18,6 @@ public interface ArmAnimation {
     /** @return The duration in seconds of the animation */
     double getDurationSecs();
     
-    /** @return The number of seconds since the animation has started playing */
-    double getSecondsElapsedFromStart();
-    
-    /** @return True if the animation is currently playing */
-    boolean isPlaying();
     
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -37,7 +31,7 @@ public interface ArmAnimation {
      *     ArmAnimation myIncredibleAnimation = ...
      *     ArmAnimation myBeautifulAnimation = ...
      *     ArmAnimation myIncrediblyBeautifulAnimation
-     *      = myIncredibleAnimation.andThenPlay(myBeautifulAnimation);
+     *      = myIncredibleAnimation.followedBy(myBeautifulAnimation);
      * }</pre>
      * @param second The animation to chain to {@code this} animation
      * @return An animation that will play {@code second} animation when {@code this} is over
@@ -55,16 +49,6 @@ public interface ArmAnimation {
             @Override
             public double getDurationSecs() {
                 return first.getDurationSecs()+second.getDurationSecs();
-            }
-
-            @Override
-            public double getSecondsElapsedFromStart() {
-                return first.getSecondsElapsedFromStart() + second.getSecondsElapsedFromStart();
-            }
-
-            @Override
-            public boolean isPlaying() {
-                return first.isPlaying() || second.isPlaying();
             }
         };
     }

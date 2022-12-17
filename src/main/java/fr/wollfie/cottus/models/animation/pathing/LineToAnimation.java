@@ -2,17 +2,15 @@
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.dto.ArmSpecification;
-import fr.wollfie.cottus.models.animation.ArmAnimation;
+import fr.wollfie.cottus.dto.ArmAnimation;
+import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
+import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
-import java.util.Objects;
-
-public final class LineToAnimation implements ArmAnimation {
+public final class LineToAnimation extends RelativeArmAnimation {
     
     private final Vector3D position;
     private final double timeSec;
-
-    private boolean isPlaying;
     
     public LineToAnimation(
             @JsonProperty("position") Vector3D position,
@@ -21,18 +19,16 @@ public final class LineToAnimation implements ArmAnimation {
         this.position = position;
         this.timeSec = timeSec;
     }
-
+    
     @Override
-    public ArmSpecification evaluateAt(double secFromStart) { return null; }
+    protected RelativeEndEffectorSpecification relativeEvaluateAt(double secFromStart) {
+        return new RelativeEndEffectorSpecification(
+                position.interpolate(Vector3D.Zero, secFromStart/this.timeSec),
+                Rotation.Identity, 0
+        );
+    }
 
     @Override
     public double getDurationSecs() { return timeSec; }
-
-    @Override
-    public double getSecondsElapsedFromStart() { return 0; }
-
-    @Override
-    public boolean isPlaying() { return false; }
-
 
 }

@@ -9,11 +9,14 @@ import static fr.wollfie.cottus.utils.maths.Axis3D.*;
 import static java.lang.Math.*;
 
 public class Vector3D {
-    
+    /** The zero vector */
+    public static Vector3D Zero =  Vector3D.of(0, 0, 0);
+
     @JsonProperty("x") public final double x;
     @JsonProperty("y") public final double y;
     @JsonProperty("z") public final double z;
-    
+
+
     Vector3D(
         @JsonProperty("x") double x,
         @JsonProperty("y") double y,
@@ -23,15 +26,10 @@ public class Vector3D {
         this.y = y;
         this.z = z;
     }
-    
+
     /** @return A new vector with the specified (x, y, z) coordinates */
     public static Vector3D of(double x, double y, double z) {
         return new Vector3D(x, y, z);
-    }
-
-    /** @return The zero vector */
-    public static Vector3D Zero() {
-        return Vector3D.of(0, 0, 0);
     }
 
     /** @return True if the vector is zero, false otherwise */
@@ -157,5 +155,10 @@ public class Vector3D {
                 ", y=" + y +
                 ", z=" + z +
                 '}';
+    }
+
+    public Vector3D interpolate(Vector3D other, double ratio) {
+        return this.scaledBy(1-ratio)
+                .add(other.scaledBy(ratio));
     }
 }

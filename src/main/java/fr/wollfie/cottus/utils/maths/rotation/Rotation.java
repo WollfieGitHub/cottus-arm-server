@@ -5,8 +5,10 @@ import fr.wollfie.cottus.utils.maths.Quaternion;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 
 public class Rotation {
-    
+
     @JsonProperty("eulerAngles") private final Vector3D eulerAngles;
+
+    public static Rotation Identity = Rotation.from(Vector3D.Zero);
 
     /**
      * Build a rotation object using euler angles
@@ -15,13 +17,13 @@ public class Rotation {
     private Rotation(
             @JsonProperty("eulerAngles") Vector3D eulerAngles
     ) { this.eulerAngles = eulerAngles; }
-    
+
     /** @return A new rotation object from euler angles */
     public static Rotation from(Vector3D eulerAngles) { return new Rotation(eulerAngles); }
-    
+
     /** @return A new rotation object from quaternion */
     public static Rotation from(Quaternion quaternion) { return new Rotation(quaternion.toEulerAngles()); }
-    
+
     /** @return The rotation as euler angles */
     public Vector3D getEulerAngles() { return this.eulerAngles; }
     

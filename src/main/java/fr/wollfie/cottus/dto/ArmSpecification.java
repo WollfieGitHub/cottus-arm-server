@@ -1,6 +1,6 @@
 package fr.wollfie.cottus.dto;
 
-import fr.wollfie.cottus.models.arm.positioning.specification.EndPositionAndRotationSpecification;
+import fr.wollfie.cottus.models.arm.positioning.specification.EndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
@@ -28,8 +28,9 @@ public interface ArmSpecification {
     static ArmSpecification fromEnd(
             Vector3D endPosition,
             Rotation endRotation,
-            double endAngle
+            double endAngle,
+            boolean relativePosition
     ) {
-        return new EndPositionAndRotationSpecification( endPosition, endRotation, endAngle );
+        return new EndEffectorSpecification( endPosition, endRotation, endAngle );
     }
 }

@@ -8,13 +8,13 @@ import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EndPositionAndRotationSpecification implements ArmSpecification {
+public abstract class EndEffectorSpecification implements ArmSpecification {
 
     private final double endEffectorAngleRad;
     private final Vector3D endEffectorPosition;
     private final Rotation endEffectorOrientation;
 
-    public EndPositionAndRotationSpecification(
+    public EndEffectorSpecification(
             Vector3D endEffectorPosition,
             Rotation endEffectorOrientation,
             double endEffectorAngleRad
@@ -22,15 +22,5 @@ public class EndPositionAndRotationSpecification implements ArmSpecification {
         this.endEffectorAngleRad = endEffectorAngleRad;
         this.endEffectorPosition = endEffectorPosition;
         this.endEffectorOrientation = endEffectorOrientation; 
-    }
-    
-    @Override
-    public List<Double> getAngles() {
-        List<Double> angles = new ArrayList<>(InverseKinematicModule.inverseSolve(
-                this.endEffectorPosition,
-                this.endEffectorOrientation
-        ));
-        angles.set(6, endEffectorAngleRad);
-        return angles;
     }
 }
