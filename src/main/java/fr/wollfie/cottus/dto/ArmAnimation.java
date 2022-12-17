@@ -72,10 +72,12 @@ public interface ArmAnimation {
      * @param position The end position in 3D space
      * @param timeSec The time to take between the position at the beginning of the animation
      *                and the end
+     * @param relative True if the position should be taken relative to the current position
+     *                 of the end effector, or false if it should refer to global 3D space
      * @return The lineTo animation
      */
-    static ArmAnimation lineTo(Vector3D position, double timeSec) {
-        return new LineToAnimation(position, timeSec);
+    static ArmAnimation lineTo(Vector3D position, double timeSec, boolean relative) {
+        return new LineToAnimation(position, timeSec, relative);
     }
 
     /**
