@@ -12,9 +12,9 @@ public final class LineToAnimation extends EndEffectorAnimation {
     private final double timeSec;
     
     public LineToAnimation(
-            boolean relative,
+            @JsonProperty("relative") boolean relative,
             @JsonProperty("position") Vector3D position,
-            @JsonProperty("timeSec") double timeSec
+            @JsonProperty("time") double timeSec
     ) {
         super(relative);
         this.position = position;
