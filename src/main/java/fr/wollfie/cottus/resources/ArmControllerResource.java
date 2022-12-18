@@ -3,11 +3,9 @@ package fr.wollfie.cottus.resources;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
-import fr.wollfie.cottus.models.arm.positioning.specification.AngleSpecification;
-import fr.wollfie.cottus.services.ArmControllerService;
+import fr.wollfie.cottus.services.ManualArmControllerService;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
-import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 
@@ -19,12 +17,13 @@ import javax.ws.rs.core.Response;
 @Path("/api/arm-controller")
 public class ArmControllerResource {
     
-    @Inject ArmControllerService armControllerService;
+    @Inject
+    ManualArmControllerService manualArmControllerService;
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<CottusArm> getArmState() {
-        return Uni.createFrom().item(armControllerService.getArmState());
+        return Uni.createFrom().item(manualArmControllerService.getArmState());
     }
     
     @POST
@@ -44,7 +43,7 @@ public class ArmControllerResource {
                         b.getDouble("eulerZ"));
 
                 try {
-                    armControllerService.moveEndEffectorWith( pos, Rotation.from(euler), b.getDouble("rotRad") );
+                    manualArmControllerService.moveEndEffectorWith( pos, Rotation.from(euler), b.getDouble("rotRad") );
                     return Response.ok().build();
                 } catch (NoSolutionException e) {
                     e.printStackTrace();
@@ -65,7 +64,7 @@ public class ArmControllerResource {
                 if (i2 >= 2) { i2+=1; }
                 if (i2 >= 5) { i2+=1; }
                 if (i2 >= 8) { i2+=1; }
-                armControllerService.setAngle(i2, angleRad);
+                manualArmControllerService.setAngle(i2, angleRad);
             } catch (AngleOutOfBoundsException e) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }

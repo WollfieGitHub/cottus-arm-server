@@ -3,6 +3,7 @@ package fr.wollfie.cottus.dto;
 import fr.wollfie.cottus.models.animation.pathing.BezierToAnimation;
 import fr.wollfie.cottus.models.animation.pathing.LineToAnimation;
 import fr.wollfie.cottus.models.animation.pathing.SemiCircleToAnimation;
+import fr.wollfie.cottus.models.animation.pathing.WaitAnimation;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
@@ -128,6 +129,6 @@ public interface ArmAnimation {
      * @return The wait animation
      */
     static ArmAnimation waitDuring(double timeSec) {
-        throw new NotImplementedYet();
+        return new WaitAnimation(timeSec);
     }
 }

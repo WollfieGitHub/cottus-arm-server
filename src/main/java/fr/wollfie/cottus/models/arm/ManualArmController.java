@@ -8,7 +8,7 @@ import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.joints.SimpleJointBounds;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.InverseKinematicModule;
-import fr.wollfie.cottus.services.ArmControllerService;
+import fr.wollfie.cottus.services.ManualArmControllerService;
 import fr.wollfie.cottus.services.ArmLoaderService;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
@@ -22,7 +22,7 @@ import java.util.List;
 import static java.lang.Math.PI;
 
 @ApplicationScoped
-public class ArmController implements ArmControllerService {
+public class ManualArmController implements ManualArmControllerService {
 
     private static final DHTable DH_TABLE = new DHTable(
             //           |   J1 |    J2 |    J3_0|   J3_1|    J4 |  J5_1 |  J5_2 |    J6 |  J7_1 |  J7_2 |

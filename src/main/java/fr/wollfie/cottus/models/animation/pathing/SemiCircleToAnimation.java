@@ -38,7 +38,7 @@ public class SemiCircleToAnimation extends EndEffectorAnimation {
         
         // Half of the base of the triangle and its other side with the Pythagorean Theorem
         double height = sqrt(radius*radius - (chordLength*chordLength/4));
-        // TODO REMOVE ONCE CHECK
+        // TODO REMOVE ONCE CHECKED
         if (Double.isNaN(height)) { throw new IllegalStateException("Wrong sign under the root"); }
         
         this.centerPoint = circleDirection

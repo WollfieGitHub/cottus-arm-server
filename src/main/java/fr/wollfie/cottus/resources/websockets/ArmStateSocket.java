@@ -3,7 +3,7 @@ package fr.wollfie.cottus.resources.websockets;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wollfie.cottus.security.WebsocketTokenManager;
-import fr.wollfie.cottus.services.ArmControllerService;
+import fr.wollfie.cottus.services.ManualArmControllerService;
 import io.quarkus.logging.Log;
 import io.quarkus.security.UnauthorizedException;
 
@@ -27,7 +27,8 @@ public class ArmStateSocket {
     private final Map<String, Session> connectedClients = new ConcurrentHashMap<>();
 
     @Inject WebsocketTokenManager tokenManager;
-    @Inject ArmControllerService armControllerService;
+    @Inject
+    ManualArmControllerService manualArmControllerService;
 
     @OnOpen
     public void onOpen(Session session, @PathParam("token") String token) {
@@ -77,7 +78,7 @@ public class ArmStateSocket {
         // Broadcast a change of state in the system
         connectedClients.values().forEach(client -> {
             try {
-                 client.getAsyncRemote().sendObject(defaultObjectMapper.writeValueAsString(armControllerService.getArmState()));
+                 client.getAsyncRemote().sendObject(defaultObjectMapper.writeValueAsString(manualArmControllerService.getArmState()));
             } catch (JsonProcessingException e) { throw new RuntimeException(e); }
         } );
     }
