@@ -1,5 +1,6 @@
 package fr.wollfie.cottus.dto;
 
+import fr.wollfie.cottus.models.animation.pathing.BezierToAnimation;
 import fr.wollfie.cottus.models.animation.pathing.LineToAnimation;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
@@ -83,14 +84,21 @@ public interface ArmAnimation {
     /**
      * Interpolate as a Bézier curve between the current position and the given position in 3D space,
      * with the given point as anchors for the Bézier curve within the given time frame
+     * @see
+     * <a href="https://mathcurve.com/courbes3d.gb/bezier3d/bezier3d.shtml">
+     *      This site for better understanding on how to set the parameters of this function
+     * </a>
+     * @param relative True if the position should be taken relative to the current position
+     *                 of the end effector, or false if it should refer to global 3D space
      * @param endPosition The end position in 3D space
      * @param timeSec The time to take between the position at the beginning of the animation
      *                and the end
      * @param anchorPoints The anchor points for the curve
      * @return The lineTo animation
+     *
      */
-    static ArmAnimation bezierTo(Vector3D endPosition, double timeSec, Vector3D... anchorPoints) {
-        throw new NotImplementedYet();
+    static ArmAnimation bezierTo(boolean relative, Vector3D endPosition, double timeSec, Vector3D... anchorPoints) {
+        return new BezierToAnimation(relative, endPosition, timeSec, anchorPoints);
     }
 
     /**
