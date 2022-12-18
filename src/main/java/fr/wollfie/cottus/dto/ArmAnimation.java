@@ -76,8 +76,8 @@ public interface ArmAnimation {
      *                 of the end effector, or false if it should refer to global 3D space
      * @return The lineTo animation
      */
-    static ArmAnimation lineTo(Vector3D position, double timeSec, boolean relative) {
-        return new LineToAnimation(position, timeSec, relative);
+    static ArmAnimation lineTo(boolean relative, Vector3D position, double timeSec) {
+        return new LineToAnimation(relative, position, timeSec);
     }
 
     /**
