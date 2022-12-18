@@ -2,6 +2,7 @@ package fr.wollfie.cottus.dto;
 
 import fr.wollfie.cottus.models.animation.pathing.BezierToAnimation;
 import fr.wollfie.cottus.models.animation.pathing.LineToAnimation;
+import fr.wollfie.cottus.models.animation.pathing.SemiCircleToAnimation;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
@@ -109,13 +110,16 @@ public interface ArmAnimation {
      * position and end position will be designated as the center of the circle if the parameter {@code angleDeg} is set to pi/2.
      * <br><br>The tangent at the beginning point of the circle will point towards the specified {@code circleDirection}
      *   parameter. For example, if the direction is up, the circle's normal will be pointing towards the right or down</p>
+     * @param relative True if the position should be taken relative to the current position
+     *                 of the end effector, or false if it should refer to global 3D space
      * @param endPosition The end position in 3D space
      * @param timeSec The time to take between the position at the beginning of the animation
      *                and the end
      * @return The lineTo animation
      */
-    static ArmAnimation semiCircleTo(Vector3D endPosition, double timeSec, double angleDeg, Vector3D circleDirection) {
-        throw new NotImplementedYet();
+    static ArmAnimation semiCircleTo(boolean relative, Vector3D endPosition, double timeSec, 
+                                     double angleDeg, Vector3D circleDirection) {
+        return new SemiCircleToAnimation(relative, endPosition, timeSec, angleDeg, circleDirection);
     }
 
     /**
