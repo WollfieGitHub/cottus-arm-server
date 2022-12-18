@@ -27,7 +27,8 @@ public class BezierToAnimation extends EndEffectorAnimation{
     protected Tuple3<Vector3D, Rotation, Double> relativeEvaluateAt(double secFromStart) {
         double[] bezierCoefficient = new double[anchorPoints.length];
         // TODO BEZIER COEFFICIENTS
-
+        // https://mathcurve.com/courbes3d.gb/bezier3d/bezier3d.shtml
+        
         Vector3D result = Vector3D.Zero;
         for (int i = 0; i < anchorPoints.length; i++) {
             result = result.add( anchorPoints[i].scaledBy(bezierCoefficient[i]) );
