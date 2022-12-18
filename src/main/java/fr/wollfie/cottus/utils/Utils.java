@@ -1,7 +1,5 @@
 package fr.wollfie.cottus.utils;
 
-import fr.wollfie.cottus.utils.Constants;
-
 import static fr.wollfie.cottus.utils.Constants.EPSILON;
 
 public class Utils {
@@ -14,7 +12,7 @@ public class Utils {
     
     /** @return The binomial coefficient for parameters (k, n)
      * @implNote <a href="https://rosettacode.org/wiki/Evaluate_binomial_coefficients#Java">Source</a> */
-    public static double binom(int k, int n) {
+    public static double binomial(int k, int n) {
         if (k>n-k) { k=n-k; }
 
         long b=1;

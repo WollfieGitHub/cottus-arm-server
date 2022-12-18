@@ -7,7 +7,7 @@ import io.smallrye.mutiny.tuples.Tuple3;
 import java.util.ArrayList;
 import java.util.List;
 
-import static fr.wollfie.cottus.utils.Utils.binom;
+import static fr.wollfie.cottus.utils.Utils.binomial;
 import static java.lang.Math.pow;
 
 public class BezierToAnimation extends EndEffectorAnimation {
@@ -44,7 +44,7 @@ public class BezierToAnimation extends EndEffectorAnimation {
         Vector3D result = Vector3D.Zero;
 
         for (int k = 0; k < n; k++) {
-            double bernsteinCoefficient = binom(k, n) * pow(t, k) * pow(1 - t, n - k);
+            double bernsteinCoefficient = binomial(k, n) * pow(t, k) * pow(1 - t, n - k);
             result = result.add(anchorPoints.get(k).scaledBy(bernsteinCoefficient));
         }
 
