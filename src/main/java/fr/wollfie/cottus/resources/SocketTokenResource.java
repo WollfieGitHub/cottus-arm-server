@@ -13,8 +13,7 @@ import javax.ws.rs.core.SecurityContext;
 @Path("/api/socket-token")
 public class SocketTokenResource {
     
-    @Inject
-    WebsocketTokenManager tokenProvider;
+    @Inject WebsocketTokenManager tokenProvider;
     
     @GET
     @Produces(MediaType.TEXT_PLAIN)

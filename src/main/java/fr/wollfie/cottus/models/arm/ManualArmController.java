@@ -10,6 +10,7 @@ import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.InverseKinematicModule;
 import fr.wollfie.cottus.services.ManualArmControllerService;
 import fr.wollfie.cottus.services.ArmLoaderService;
+import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
@@ -107,9 +108,10 @@ public class ManualArmController implements ManualArmControllerService {
 
     @Override
     public void moveEndEffectorWith(Vector3D position, Rotation rotation, double effectorAngle) throws NoSolutionException {
-        List<Double> angleSolutions = InverseKinematicModule.inverseSolve(cottusArm, position, rotation);
+        Vector angleSolutions = InverseKinematicModule.inverseSolve(cottusArm, position, rotation);
         // If a solution is found, the following code executes, otherwise it does not
-        List<Double> angles = new ArrayList<>(angleSolutions);
+        List<Double> angles = new ArrayList<>();
+        for (int i = 0; i < angleSolutions.dim; i++) { angles.add(angleSolutions.get(i)); }
         angles.add(effectorAngle);
         try {
             // Update the arm with the angles

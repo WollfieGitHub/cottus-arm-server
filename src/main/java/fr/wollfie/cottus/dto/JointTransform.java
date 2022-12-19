@@ -27,7 +27,7 @@ public interface JointTransform {
     
     /** @return The origin of the transform's frame of reference */
     @JsonGetter("origin")
-    default Vector3D getOrigin() { return transform(Vector3D.Zero()); }
+    default Vector3D getOrigin() { return transform(Vector3D.Zero); }
     
     /** @return The x unit vector projected into the transform's local space*/
     @JsonGetter("localX")

@@ -31,6 +31,6 @@ public interface ArmSpecification {
             double endAngle,
             boolean relativePosition
     ) {
-        return new EndEffectorSpecification( endPosition, endRotation, endAngle );
+        return null;
     }
 }

@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.models.animation.pathing;
+package fr.wollfie.cottus.models.animation.pathing;
 
 import fr.wollfie.cottus.dto.ArmAnimation;
 import fr.wollfie.cottus.dto.ArmSpecification;

@@ -6,9 +6,10 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.dto.JointTransform;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector3D;
-import fr.wollfie.cottus.utils.maths.matrices.HTMatrix;
+import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.common.constraint.NotNull;
+import org.ejml.simple.SimpleMatrix;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
 public class SimpleJointTransform implements JointTransform {
@@ -41,9 +42,9 @@ public class SimpleJointTransform implements JointTransform {
      * @param parentToChild The transformation matrix which, from a point in {@code this} local space
      *                     will transform the point in the child's local space
      */
-    public void setTransform(HTMatrix parentToChild) {
-        this.localPosition = parentToChild.extractTranslation();
-        this.localRotation = Rotation.from(parentToChild.extractRotation());
+    public void setTransform(SimpleMatrix parentToChild) {
+        this.localPosition = MatrixUtil.extractTranslation(parentToChild);
+        this.localRotation = Rotation.from(MatrixUtil.extractRotation(parentToChild));
     }
 
 //=========   ====  == =

@@ -3,15 +3,16 @@ package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
-import fr.wollfie.cottus.utils.Utils;
-import fr.wollfie.cottus.utils.maths.Axis3D;
+import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
-import fr.wollfie.cottus.utils.maths.matrices.Matrix;
+import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
+import org.ejml.data.SingularMatrixException;
+import org.ejml.simple.SimpleMatrix;
 
-import java.util.List;
-
-import static java.lang.Math.*;
+import java.util.Random;
+import java.util.function.Function;
+import java.util.stream.IntStream;
 
 /**
  * Kinematic Analysis :
@@ -21,13 +22,9 @@ import static java.lang.Math.*;
  */
 public class InverseKinematicModule {
 
-    private double c1, c2, c3, c4, c5;
-    private double s1, s2, s3, s4, s5;
-    private double v114, v124;
-    private double c23, s23;
-    private Vector3D p, w, u, v;
-    private double v313, v323, v113;
-
+    private static final double ALPHA = 1;
+    private static final double BETA = 0.5;
+    
     // Static class, cannot be instantiated
     private InverseKinematicModule() {}
 
@@ -48,197 +45,145 @@ public class InverseKinematicModule {
      * @implNote From "Solving Kinematics Problems of a 6-DOF Robot Manipulator", Alireza Khatamian: 
      * The computation of the inverse kinematics given in these papers were adapted to the robot arm's configuration
      */
-    public static List<Double> inverseSolve(
+    public static Vector inverseSolve(
             CottusArm arm,
             Vector3D endEffectorPosition,
             Rotation endEffectorRotation
     ) throws NoSolutionException {
         InverseKinematicModule module = new InverseKinematicModule();
-        return module.ikSolve(arm, endEffectorPosition, endEffectorRotation);
+        return module.ikSolve(
+                arm, endEffectorPosition, endEffectorRotation.getEulerAngles(),
+                1.0, 0.5, 24, 12
+        );
     }
     
-    private List<Double> ikSolve(
+    private static final double Delta = 0.01;
+    /** 
+     * Explanation of algorithm (from the paper) :
+     * For m = 2, the Jacobians J1t and J2t are created, leading to two possible solutions Q1t and Q2t. Through
+     * forward kinematics, each Qit determines a new pose Xit . In this simple example, X2t is selected since
+     * it is closer to the desired/final point Xfinal. In the next iteration t + 1, the process will continue 
+     * from this position, Q2t.
+     * */
+    private Vector ikSolve(
             CottusArm arm,
-            Vector3D endEffectorPosition,
-            Rotation endEffectorRotation
+            Vector3D pos,
+            Vector3D rot,
+            double maxErrorMm, double standardDeviation,
+            int nbThreads, int nbIndividuals
     ) throws NoSolutionException {
-        Vector3D nRight = Axis3D.X.rotatedAtOriginUsing(endEffectorRotation.getEulerAngles());
-        Vector3D nDir = Axis3D.Z.rotatedAtOriginUsing(endEffectorRotation.getEulerAngles());
-        Vector3D nUp = Axis3D.Y.rotatedAtOriginUsing(endEffectorRotation.getEulerAngles());
+        Random random = new Random();
+        DHTable table = arm.getDHTable().copy();
+        // We don't care about the end effector's end angle
+        int n = arm.getNbOfJoints()-1;
+        // Desired configuration of the end effector
+        Vector xFinal = new Vector(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z);
+
+        // Forward kinematic function
+        Function<Vector, Vector> f = q -> {
+            SimpleMatrix transform = table.getTransformMatrix(0, n);
+            Vector3D translation = MatrixUtil.mult(transform, Vector3D.Zero);
+            Vector3D rotation = MatrixUtil.extractRotation(transform) ;
+            return new Vector(translation.x, translation.y, translation.z, rotation.x, rotation.y, rotation.z);
+        };
+
+        // Current joint configuration (angles) of the arm
+        Vector qT = new Vector(IntStream.range(0, n).mapToDouble(table::getTheta).toArray());
+        // Current configuration (position and rotation) of the end effector
+        Vector xT = f.apply(qT);
         
-        // Copy the DH Table so that the arm's isn't actually modified
-        DHTable dhTable = arm.getDHTable().copy();
-        // Just a security in case it was modified somewhere for no reason
-        for (int i = 0; i < dhTable.size(); i++) { dhTable.setTheta(i, 0); }
-
-        // In rotation matrix, first line is "right", second is "up", third is "forward"
-        // The transform from the base to the desired position and direction
-        Matrix t0toG = new Matrix(new double[][]{
-                {nRight.x, nRight.y, nRight.x, endEffectorPosition.x},
-                {nUp.x, nUp.y, nUp.y, endEffectorPosition.y},
-                {nDir.x, nDir.y, nDir.z, endEffectorPosition.z},
-                {0, 0, 0, 1}});
-
-        u = Vector3D.of( t0toG.get(0, 0), t0toG.get(0, 1), t0toG.get(0, 2));
-        v = Vector3D.of( t0toG.get(1, 0), t0toG.get(1, 1), t0toG.get(1, 2));
-        w = Vector3D.of( t0toG.get(2, 0), t0toG.get(2, 1), t0toG.get(2, 2));
-
-        p = Vector3D.of(
-                t0toG.get(0, 3) - dhTable.getD(6)* w.x,
-                t0toG.get(1, 3) - dhTable.getD(6)* w.y,
-                t0toG.get(2, 3) - dhTable.getD(6)* w.z);
+        // Attenuation factor that governs convergence speed of the algorithm
+        final double alphaT = 0.1;
+        final int spread = nbThreads/nbIndividuals;
         
-        IKSolutionSet solutionSet = IKSolutionSet.createNew().divide(1, solveTheta1(), dhTable)
-                .flatMap(s -> s.divide(2, solveTheta2(), dhTable)).parallel()
-                .flatMap(s -> s.divide(3, solveTheta3(), dhTable))
-                .flatMap(s -> s.divide(4, solveTheta4(), dhTable))
-                .flatMap(s -> s.divide(5, solveTheta5(), dhTable))
-                .flatMap(s -> s.divide(6, solveTheta6(), dhTable))
-                .filter(IKSolutionSet::hasAllTags)
-                .findFirst().orElse(null);
-        if (solutionSet == null) { throw new NoSolutionException(); }
-        List<Double> solutions = solutionSet.getAll();
-        if (solutions.isEmpty()) { throw new NoSolutionException(); }
+        // Save a sqrt
+        while (xT.subtract(xFinal).normSquared() >= maxErrorMm*maxErrorMm) {
+            
+            // Fork with multiple threads and randomly generate jacobians with "White Noise"
+            // distribution to converge faster
+            SimpleMatrix[][] jacobians = new SimpleMatrix[nbIndividuals][spread];
+            Vector[][] qTs = new Vector[nbIndividuals][spread];
+            Vector[][] xTs = new Vector[nbIndividuals][spread];
+
+            Vector[] xL = new Vector[spread];
+            Vector[] qL = new Vector[spread];
+            
+            Vector finalQT = qT, finalXT = xT;
+            IntStream.range(0, nbThreads).parallel().forEach(k -> {
+
+                int l = k / (spread);
+                int kl = k % (spread);
+
+                Vector[] cols = new Vector[n];
+                for (int c = 0; c < n; c++) {
+                    cols[c] = finalXT.subtract(f.apply(finalQT.add(Vector.unit(c++, n).scaled(Delta))));
+                }
+
+                SimpleMatrix jacobian = MatrixUtil.from(cols);
+                
+                jacobians[l][kl] = MatrixUtil.apply(jacobian, d -> d+random.nextGaussian(0, standardDeviation));
+                
+                try {
+                    Vector deltaQT;
+                    
+                    if (n == 3 + 3) { deltaQT = MatrixUtil.mult(jacobians[l][kl].invert(), xFinal.subtract(finalXT).scaled(alphaT)); } 
+                    else { deltaQT = MatrixUtil.mult(jacobians[l][kl].pseudoInverse(), xFinal.subtract(finalXT).scaled(alphaT)); }
+                    
+                    qTs[l][kl] = finalQT.add(deltaQT);
+                    xTs[l][kl] = f.apply(qTs[l][kl]);
+                } catch (SingularMatrixException e) { qTs[l][kl] = null; xTs[l][kl] = null; }
+            });
+            
+            // Join all threads by finding the angles that most minimize the error 
+            // relative to distance and rotation
+            for (int l = 0; l < nbIndividuals; l++) {
+                int minIndex = getMinIndex(spread, xFinal, xTs, l);
+                xL[l] = xTs[l][minIndex];
+                qL[l] = qTs[l][minIndex];
+            }
+
+            int minIndex = getMinIndexInBreeds(nbIndividuals, xFinal, xL, qL);
+            xT = xL[minIndex];
+            qT = qL[minIndex];
+        }
+        // Once error is small enough, return the angles
+        return qT;
+    }
+
+    /** @return The index of the bred item with minimum fitness */
+    private int getMinIndexInBreeds(int breedSize, Vector xF, Vector[] xL, Vector[] qL) {
+        double min = Double.MAX_VALUE;
         
-        return solutions;
+        int minIndex = -1;
+        double fitness;
+        for (int l = 0; l < breedSize; l++) {
+            Vector xI = xL[l];
+            fitness = ( 
+                    (xF.get(0)-xI.get(0)) * (xF.get(0)-xI.get(0))
+                    + (xF.get(1)-xI.get(1)) * (xF.get(1)-xI.get(1))
+                    + (xF.get(2)-xI.get(2)) * (xF.get(2)-xI.get(2))
+            ) * ALPHA + ( // IMPORTANCE OF TRANSLATION
+                    (xF.get(3)-xI.get(3)) * (xF.get(3)-xI.get(3))
+                            + (xF.get(4)-xI.get(4)) * (xF.get(4)-xI.get(4))
+                            + (xF.get(5)-xI.get(5)) * (xF.get(5)-xI.get(5))
+            ) * BETA; // IMPORTANCE OF ROTATION
+            if (fitness < min) { minIndex = l; min = fitness; }
+        }
+        return minIndex;
     }
 
-    /**
-     * Solve the inverse kinematics for theta1 and return the list of possible values of theta1
-     * @return A list of possible solutions
-     */
-    private IKSolver solveTheta1() {
-        return (t) -> {
-            // The 6th joint's space is aligned with N such that P_5to6 = d6 * N
-            // And P_0to6 = [T0to6_03, T0to6_13, T0to6_23] (Offset in the transformation)
-            // From which we have P_0to5 = P_0to6 - P_5to6 which yields
-            double r = sqrt(p.x*p.x + p.y*p.y);
-            double d2 = t.getD(2);
-            // If the radius is shorter that the first link, then we cannot reach it
-            if (r < d2) { throw new NoSolutionException(); }
-
-            double k1 = atan2(p.x, p.y);
-            double k2 = asin(d2/r);
-
-            return List.of(
-                    IKSolution.ofTagged(k1+k2, IKTag.SHOULDER_RIGHT),
-                    IKSolution.of(k1-k2+PI)
-            );
-        };
+    /** Returns the index of the change with minimal error */
+    private static int getMinIndex(int spread, Vector xFinal, Vector[][] xTs, int l) {
+        double min = Double.MAX_VALUE;
+        int minIndex = -1;
+        for (int kl = 0; kl < spread; kl++) {
+            double error = xFinal.subtract(xTs[l][kl]).normSquared();
+            if (xTs[l][kl] != null && error < min) { 
+                minIndex = kl;
+                min = error;
+            }
+        }
+        return minIndex;
     }
 
-    /**
-     * Solve the inverse kinematics for theta1 and return the list of possible values of theta2
-     * @return A list of possible solutions
-     */
-    private IKSolver solveTheta2() {
-        return (t) -> {
-            double theta1 = t.getTheta(1);
-            c1 = cos(theta1);
-            s1 = sin(theta1);
-
-            v114 = p.x* c1 + p.y* s1 - t.getA(1);
-            v124 = p.z - t.getD(1);
-
-            double r = sqrt(v114 * v114 + v124 * v124);
-
-            double a2 = t.getA(2), d4 = t.getD(4), a3 = t.getA(3);
-            double k1= (a2*a2 - d4*d4 - a3*a3 + v114 * v114 + v124 * v124) / (2*a2*r);
-            if (abs(k1) > 1) { throw new NoSolutionException(); }
-            
-            double k2 = acos(k1);
-            return List.of(
-                    IKSolution.ofTagged(atan2(v124, v114) + k2, IKTag.ELBOW_UP),
-                    IKSolution.of(atan2(v124, v114) - k2)
-            );
-        };
-    }
-
-    /**
-     * Solve the inverse kinematics for theta1 and return the list of possible values of theta3
-     * @return A list of possible solutions
-     */
-    private IKSolver solveTheta3() {
-        return (t) -> {
-            double theta2 = t.getTheta(2);
-            c2 = cos(theta2);
-            s2 = sin(theta2);
-
-            double v214 =  c2 *v114 + s2 *v124 - t.getA(2);
-            double v224 = -s2 *v114 + c2 *v124;
-
-            // TODO We might miss a solution here
-            return List.of( IKSolution.of(-atan2(t.getA(3), t.getD(4)) + atan2(v214, -v224)) );
-        };
-    }
-
-    /**
-     * Solve the inverse kinematics for theta1 and return the list of possible values of theta4
-     * @return A list of possible solutions
-     */
-    private IKSolver solveTheta4() {
-        return (t) -> {
-            c23 = cos(t.getTheta(2)+t.getTheta(3));
-            s23 = sin(t.getTheta(2)+t.getTheta(3));
-            
-            return List.of(
-                    IKSolution.ofTagged(getTh4(1), IKTag.WRIST_NOT_FLIPPED), 
-                    IKSolution.of(getTh4(-1))
-            );
-        };
-    }
-    
-    /** Help get both values of theta4 */
-    private double getTh4(int n4) {
-        v113 = c1*w.x + s1*w.y;
-        v313 = c23* v113 + s23*w.z;
-        v323 = s1*w.x - c1*w.y;
-
-        double th4;
-        double th4Old = 0.0;
-        if (Utils.isZero(v323) && Utils.isZero(v313)) { th4 = 0.0; }
-        else { th4 = atan2(n4* v323, n4* v313); }
-
-        if (Utils.isZero(v323) && v313 <= 0) { th4 = th4Old; }
-        if (v323 >= 0 && v313 <= 0) { th4 = th4 - 2*PI; }
-        if (Utils.isZero(v113) && Utils.isZero(v313) && Utils.isZero(v323)) { th4 = th4Old; }
-        return th4;
-    }
-
-    /**
-     * Solve the inverse kinematics for theta1 and return the list of possible values of theta5
-     * @return A list of possible solutions
-     */
-    private IKSolver solveTheta5() {
-        return (t) -> {
-            c4 = cos(t.getTheta(4));
-            s4 = sin(t.getTheta(4));
-            
-            double k1 = c4*v313 + s4*v323;
-            double k2 = s23*v113 - c23*w.z;
-            return List.of( IKSolution.of(atan2(k1, k2)) );
-        };
-    }
-
-    /**
-     * Solve the inverse kinematics for theta1 and return the list of possible values of theta6
-     * @return A list of possible solutions
-     */
-    private IKSolver solveTheta6() {
-        return (t) -> {
-            c5 = cos(t.getTheta(5));
-            s5 = sin(t.getTheta(5));
-
-            double v111 = c1*u.x + s1*u.y;
-            double v131 = s1*u.x - c1*u.y;
-            double v311 = c23*v111 + s23*u.z;
-            double v331 = s23*v111 - c23*u.z;
-            double v411 = c4*v311 + s4*v131;
-            double v431 = -s4*v311 + c4*v131;
-
-            double k1 = v431;
-            double k2 = c5*v411 - s5*v331;
-            return List.of( IKSolution.of(atan2(k1, k2)) );
-        };
-    }
 }

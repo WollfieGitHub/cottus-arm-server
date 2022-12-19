@@ -3,6 +3,7 @@ package fr.wollfie.cottus.models.arm.positioning.transform;
 import fr.wollfie.cottus.dto.JointTransform;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.utils.maths.Vector3D;
+import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
 public class DHBasedJointTransform implements JointTransform {
@@ -18,7 +19,7 @@ public class DHBasedJointTransform implements JointTransform {
 
     @Override
     public Vector3D transform(Vector3D localPosition) {
-        return dhTable.getTransformMatrix(0, jointIndex).multipliedBy(localPosition);
+        return MatrixUtil.mult(dhTable.getTransformMatrix(0, jointIndex),localPosition);
     }
 
     @Override

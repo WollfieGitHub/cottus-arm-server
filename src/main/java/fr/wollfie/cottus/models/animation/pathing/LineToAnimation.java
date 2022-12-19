@@ -1,4 +1,4 @@
-﻿package fr.wollfie.cottus.models.animation.pathing;
+package fr.wollfie.cottus.models.animation.pathing;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;

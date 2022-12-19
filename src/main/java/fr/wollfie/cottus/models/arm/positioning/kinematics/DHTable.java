@@ -3,8 +3,7 @@ package fr.wollfie.cottus.models.arm.positioning.kinematics;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.wollfie.cottus.utils.Preconditions;
-import fr.wollfie.cottus.utils.maths.matrices.HTMatrix;
-import io.quarkus.logging.Log;
+import org.ejml.simple.SimpleMatrix;
 
 import static java.lang.Math.*;
 
@@ -69,8 +68,8 @@ public class DHTable {
      * @param i The index of the articulation
      * @return The transformation matrix
      */
-    public HTMatrix getTransformMatrix(int i) {
-        return new HTMatrix(new double[][]{
+    public SimpleMatrix getTransformMatrix(int i) {
+        return new SimpleMatrix(new double[][]{
                 { cos(getTheta(i)),  -sin(getTheta(i))*cos(alpha[i]),  sin(getTheta(i)*sin(alpha[i])), a[i]*cos(getTheta(i)) },
                 { sin(getTheta(i)),   cos(getTheta(i))*cos(alpha[i]), -cos(getTheta(i))*sin(alpha[i]), a[i]*sin(getTheta(i)) },
                 {             0,                 sin(alpha[i]),                cos(alpha[i]),               d[i] },
@@ -83,11 +82,11 @@ public class DHTable {
      * @param to The index of the articulation with the destination space
      * @return A transformation matrix that transforms {@code from}'s space into {@code to}'s space
      */
-    public HTMatrix getTransformMatrix(int from, int to) {
+    public SimpleMatrix getTransformMatrix(int from, int to) {
         Preconditions.checkArgument(from <= to);
-        HTMatrix result = getTransformMatrix(from);
+        SimpleMatrix result = getTransformMatrix(from);
         for (int i = from+1; i <= to; i++) {
-            result = result.multipliedBy(getTransformMatrix(i));
+            result = result.mult(getTransformMatrix(i));
         }
         return result;
     }
