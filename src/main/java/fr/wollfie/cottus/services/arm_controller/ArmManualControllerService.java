@@ -1,4 +1,4 @@
-package fr.wollfie.cottus.services;
+package fr.wollfie.cottus.services.arm_controller;
 
 import fr.wollfie.cottus.dto.ArmSpecification;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
@@ -7,15 +7,7 @@ import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
-public interface ManualArmControllerService extends ArmControllerService {
-
-    /**
-     * Move the arm using the angles found in the given specifications.
-     * @param specification A specification of all dofs of the arm
-     * @throws AngleOutOfBoundsException if one of the specification is not in bounds with the 
-     * maximum/minimum angles of the robot
-     */
-    void moveGiven(ArmSpecification specification) throws AngleOutOfBoundsException;
+public interface ArmManualControllerService extends ArmControllerService {
     
     /**
      * Move the end effector to the specified position, while keeping the elbow at the same place if possible.
@@ -50,9 +42,6 @@ public interface ManualArmControllerService extends ArmControllerService {
      * @throws NoSolutionException If there is no solution to place the end effector as desired
      */
     void moveEndEffectorWith(Vector3D position, Rotation rotation, double effectorAngle) throws NoSolutionException;
-
-    /** @return The current state of the arm, i.e., a pointer to the Arm Object */
-    CottusArm getArmState();
     
     /** Sets the given joint the specified angle */
     void setAngle(int jointIndex, double angleRad) throws AngleOutOfBoundsException;

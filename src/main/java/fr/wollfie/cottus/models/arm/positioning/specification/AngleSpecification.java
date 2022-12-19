@@ -24,6 +24,8 @@ public class AngleSpecification implements ArmSpecification {
             @JsonProperty("a6") double a6
     ) { this.angles = List.of(a0, a1, a2, a3, a4, a5, a6); }
 
+    public AngleSpecification(List<Double> angles) { this.angles = angles; }
+    
     @Override
     public List<Double> getAngles() { return this.angles; }
 }

@@ -1,8 +1,13 @@
 package fr.wollfie.cottus;
 
+import fr.wollfie.cottus.dto.CottusArm;
+import fr.wollfie.cottus.dto.JointBounds;
+import fr.wollfie.cottus.models.arm.positioning.joints.SimpleJointBounds;
+import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.resources.websockets.ArmStateSocket;
-import fr.wollfie.cottus.services.ArmAnimatorService;
-import fr.wollfie.cottus.services.ManualArmControllerService;
+import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
+import fr.wollfie.cottus.services.ArmLoaderService;
+import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Startup;
 
@@ -14,6 +19,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Math.PI;
+
 /** For lack of a better name */
 @Startup
 @ApplicationScoped
@@ -23,9 +30,16 @@ public class Core {
     private ScheduledExecutorService timer;
     
     @Inject
-    ManualArmControllerService manualArmControllerService;
-    @Inject ArmAnimatorService armAnimatorService;
+    ArmManualControllerService armManualControllerService;
+    @Inject
+    ArmAnimatorControllerService armAnimatorControllerService;
     @Inject ArmStateSocket armStateSocket;
+    
+// //======================================================================================\\
+// ||                                                                                      ||
+// ||                                       LIFECYCLE                                      ||
+// ||                                                                                      ||
+// \\======================================================================================//
     
     @PostConstruct
     void start() {
@@ -37,10 +51,12 @@ public class Core {
     /** Update the application's state */
     private void update() {
         try {
-            if (armAnimatorService.isPlayingAnimation()) {
-                this.armAnimatorService.update();
+            if (armAnimatorControllerService.isPlayingAnimation()) {
+                this.armManualControllerService.setActive(false);
+                this.armAnimatorControllerService.update();
             } else {
-                this.manualArmControllerService.update();
+                this.armManualControllerService.setActive(true);
+                this.armManualControllerService.update();
             }
             
             armStateSocket.broadCastArmState();

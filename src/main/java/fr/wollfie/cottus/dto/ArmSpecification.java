@@ -1,6 +1,5 @@
 package fr.wollfie.cottus.dto;
 
-import fr.wollfie.cottus.models.arm.positioning.specification.EndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
@@ -32,5 +31,19 @@ public interface ArmSpecification {
             boolean relativePosition
     ) {
         return null;
+    }
+
+    /** @return True if the specification is actually realisable by the arm given the joints' limits */
+    default boolean isValidGiven(List<JointBounds> bounds) {
+        if (bounds.size() != getAngles().size()) { return false; }
+
+        List<Double> angles = getAngles();
+        for (int i = 0; i < bounds.size(); i++) {
+            JointBounds b = bounds.get(i);
+            double angle = angles.get(i);
+            
+            if (!b.isInBounds(angle)) { return false; }
+        }
+        return true;
     }
 }
