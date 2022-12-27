@@ -1,17 +1,11 @@
 package fr.wollfie.cottus.models.arm.positioning.joints;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.dto.JointBounds;
 import fr.wollfie.cottus.dto.JointTransform;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
-import fr.wollfie.cottus.models.arm.positioning.transform.DHBasedJointTransform;
 import fr.wollfie.cottus.dto.Joint;
-import fr.wollfie.cottus.utils.maths.Axis3D;
-import fr.wollfie.cottus.utils.maths.Vector3D;
-import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.common.constraint.Nullable;
 
 public class JointImpl implements Joint {
@@ -54,8 +48,8 @@ public class JointImpl implements Joint {
     
     @Override
     public void setAngleRad(double angleRad) throws AngleOutOfBoundsException {
-        if (!bounds.isInBounds(angleRad)) { throw new AngleOutOfBoundsException(); }
-        
+        if (bounds.isOutOfBounds(angleRad)) { throw new AngleOutOfBoundsException(); }
+
         this.transform.setAngle(angleRad);
     }
     

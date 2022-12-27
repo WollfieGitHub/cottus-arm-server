@@ -14,6 +14,10 @@ public enum Axis3D {
 
     Axis3D(Vector3D unitVector) { this.unitVector = unitVector; }
 
+    public static Axis3D fromId(int axisId) {
+        return values()[axisId];
+    }
+
     public boolean isZero() {
         return unitVector.isZero();
     }

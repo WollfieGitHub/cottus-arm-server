@@ -1,12 +1,7 @@
 package fr.wollfie.cottus;
 
-import fr.wollfie.cottus.dto.CottusArm;
-import fr.wollfie.cottus.dto.JointBounds;
-import fr.wollfie.cottus.models.arm.positioning.joints.SimpleJointBounds;
-import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.resources.websockets.ArmStateSocket;
 import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
-import fr.wollfie.cottus.services.ArmLoaderService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Startup;
@@ -18,8 +13,6 @@ import javax.inject.Inject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static java.lang.Math.PI;
 
 /** For lack of a better name */
 @Startup
@@ -43,6 +36,7 @@ public class Core {
     
     @PostConstruct
     void start() {
+        this.armManualControllerService.setActive(true);
         this.timer = Executors.newSingleThreadScheduledExecutor(Executors.defaultThreadFactory());
         this.timer.scheduleAtFixedRate(this::update, 0, UPDATE_DELAY, TimeUnit.MILLISECONDS);
         Log.info("The update loop started...");

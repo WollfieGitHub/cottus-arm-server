@@ -47,6 +47,12 @@ public interface CottusArm {
     @JsonGetter("nbJoints")
     default int getNbOfJoints() { return joints().size(); }
 
+    /** @return The number of articulations, i.e., Degrees of freedom */
+    @JsonGetter("nbNonVirtualJoints")
+    default int getNbOfNonVirtualJoints() {
+        return joints().stream().filter(joint -> !joint.isVirtual()).toList().size();
+    }
+
     /**
      * Finds the articulation in this arm with the specified name
      * @param articulationName The name of the articulation to find

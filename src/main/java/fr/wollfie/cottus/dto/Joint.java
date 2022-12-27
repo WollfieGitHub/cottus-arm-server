@@ -1,6 +1,7 @@
 package fr.wollfie.cottus.dto;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 
@@ -37,8 +38,7 @@ public interface Joint {
 //=========   ====  == =
     
     /** @return The bounds for the angle of the joint */
-    @JsonGetter("bounds")
-    JointBounds getBounds();
+    @JsonIgnore JointBounds getBounds();
     
     /** 
      * Set the rotation of this articulation to the specified angle

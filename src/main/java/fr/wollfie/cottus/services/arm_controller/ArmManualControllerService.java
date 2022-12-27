@@ -4,6 +4,7 @@ import fr.wollfie.cottus.dto.ArmSpecification;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.dto.CottusArm;
+import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
@@ -45,4 +46,11 @@ public interface ArmManualControllerService extends ArmControllerService {
     
     /** Sets the given joint the specified angle */
     void setAngle(int jointIndex, double angleRad) throws AngleOutOfBoundsException;
+
+    /**
+     * Moves the end effector by the specified distance in Millimeters, along the given axis
+     * @param amountMm The distance in Mm
+     * @param axis The global axis 
+     */
+    void moveEndEffectorBy(float amountMm, Axis3D axis) throws NoSolutionException;
 }

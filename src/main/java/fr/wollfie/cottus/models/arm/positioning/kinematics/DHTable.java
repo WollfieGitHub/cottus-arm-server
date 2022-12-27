@@ -3,7 +3,11 @@ package fr.wollfie.cottus.models.arm.positioning.kinematics;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.wollfie.cottus.utils.Preconditions;
+import fr.wollfie.cottus.utils.maths.Vector;
 import org.ejml.simple.SimpleMatrix;
+
+import javax.swing.*;
+import java.util.Arrays;
 
 import static java.lang.Math.*;
 
@@ -76,7 +80,13 @@ public class DHTable {
                 {             0,                             0,                            0,                  1 }
         });
     }
-    
+
+    public void setThetas(Vector q) {
+        for (int i = 0; i < size; i++) {
+            if (!isVirtual(i)) { setTheta(i, q.get(i)); }
+        }
+    }
+
     /**
      * @param from The index of the articulation with the source space
      * @param to The index of the articulation with the destination space
@@ -90,7 +100,7 @@ public class DHTable {
         }
         return result;
     }
-    
+
     /** Returns a copy of the DH Table */
     public DHTable copy() {
         return new DHTable(d, a, theta0, alpha, virtual);

@@ -22,9 +22,9 @@ public record SimulatedCottusArm(
 
     @Override
     public void setAngles(List<Double> anglesRad) throws AngleOutOfBoundsException {
-        Preconditions.checkArgument(anglesRad.size() == joints.size());
+        Preconditions.checkArgument(anglesRad.size() == this.getNbOfNonVirtualJoints());
         int i = 0;
-        for (Joint j : joints) { j.setAngleRad(anglesRad.get(i)); i++; }
+        for (Joint j : joints) { if (!j.isVirtual()) { j.setAngleRad(anglesRad.get(i)); i++; } }
     }
 
     @Override

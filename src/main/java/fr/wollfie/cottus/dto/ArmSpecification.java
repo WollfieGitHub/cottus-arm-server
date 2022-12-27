@@ -1,5 +1,6 @@
 package fr.wollfie.cottus.dto;
 
+import fr.wollfie.cottus.utils.Preconditions;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
@@ -35,14 +36,17 @@ public interface ArmSpecification {
 
     /** @return True if the specification is actually realisable by the arm given the joints' limits */
     default boolean isValidGiven(List<JointBounds> bounds) {
-        if (bounds.size() != getAngles().size()) { return false; }
+        Preconditions.checkArgument(bounds.size() == getAngles().size());
 
         List<Double> angles = getAngles();
         for (int i = 0; i < bounds.size(); i++) {
             JointBounds b = bounds.get(i);
             double angle = angles.get(i);
             
-            if (!b.isInBounds(angle)) { return false; }
+            if (b.isOutOfBounds(angle)) {
+                System.out.println(b + ", " + angle);
+                return false;
+            }
         }
         return true;
     }

@@ -28,6 +28,12 @@ public class MatrixUtil {
         return mult(matrix, new Vector(other.x, other.y, other.z)).to3D();
     }
 
+    public static Vector3D multHt(SimpleMatrix htMatrix, Vector3D other) {
+        Vector vector = new Vector(other.x, other.y, other.z, 1);
+        Vector res = mult(htMatrix, vector);
+        return Vector3D.of(res.get(0)/res.get(3), res.get(1)/res.get(3), res.get(2)/res.get(3));
+    }
+
     /**
      * Applies an operation on all coefficient of the matrix
      * @param operator The operation to apply
@@ -66,6 +72,6 @@ public class MatrixUtil {
 
     /** @return The translation component of the htMatrix */
     public static Vector3D extractTranslation(SimpleMatrix htMatrix) {
-        return mult(htMatrix, Vector3D.Zero);
+        return multHt(htMatrix, Vector3D.Zero);
     }
 }

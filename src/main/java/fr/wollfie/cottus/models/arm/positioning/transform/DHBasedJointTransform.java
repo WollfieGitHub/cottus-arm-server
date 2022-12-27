@@ -19,7 +19,7 @@ public class DHBasedJointTransform implements JointTransform {
 
     @Override
     public Vector3D transform(Vector3D localPosition) {
-        return MatrixUtil.mult(dhTable.getTransformMatrix(0, jointIndex),localPosition);
+        return MatrixUtil.multHt(dhTable.getTransformMatrix(0, jointIndex), localPosition);
     }
 
     @Override

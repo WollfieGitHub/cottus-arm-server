@@ -5,6 +5,8 @@ import fr.wollfie.cottus.utils.Preconditions;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleUnaryOperator;
+import java.util.stream.DoubleStream;
 
 public class Vector {
     
@@ -16,11 +18,24 @@ public class Vector {
         this.dim = values.length;
     }
     
-    private Vector apply(DoubleBinaryOperator operator, Vector that) {
+    public static Vector Zero(int dim) {
+        double[] values = new double[dim];
+        return new Vector(values);
+    }
+    
+    public Vector apply(DoubleBinaryOperator operator, Vector that) {
         Preconditions.checkArgument(this.dim == that.dim);
         double[] values = new double[this.dim];
         for (int i = 0; i < this.dim; i++) {
             values[i] = operator.applyAsDouble(this.values[i], that.values[i]);
+        }
+        return new Vector(values);
+    }
+    
+    public Vector apply(DoubleUnaryOperator operator) {
+        double[] values = new double[this.dim];
+        for (int i = 0; i < this.dim; i++) {
+            values[i] = operator.applyAsDouble(this.values[i]);
         }
         return new Vector(values);
     }
@@ -41,12 +56,16 @@ public class Vector {
     }
     
     public Vector scaled(double scalar) {
-        return new Vector(Arrays.stream(this.values).map(d -> d*scalar).toArray());
+        double[] values = new double[dim];
+        for (int i = 0; i < dim; i++) { values[i] = this.values[i]*scalar; }
+        return new Vector(values);
     }
     
     public double normSquared() {
-        return Arrays.stream(apply((a,b) -> a*b, this).values)
-                .reduce(0.0, Double::sum);
+        double sum = 0.0;
+        double[] values = apply((a,b) -> a*b, this).values;
+        for (double value : values) { sum += value; }
+        return sum;
     }
     
     public double norm() { return Math.sqrt(this.normSquared()); }
@@ -55,5 +74,12 @@ public class Vector {
 
     public Vector3D to3D() {
         return Vector3D.of(get(0), get(1), get(2));
+    }
+
+    public double[] getValues() { return values; }
+
+    @Override
+    public String toString() {
+        return "Vector{" + Arrays.toString(values) + '}';
     }
 }

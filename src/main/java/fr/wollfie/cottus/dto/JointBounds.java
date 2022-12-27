@@ -1,18 +1,14 @@
 package fr.wollfie.cottus.dto;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface JointBounds {
     
-    /** @return The lower bound for the joint angle in radians */
-    @JsonGetter("min")
-    double getLowerBound();
-
-    /** @return The upper bound for the joint angle in radians */
-    @JsonGetter("max")
-    double getUpperBound();
-
     /** @return True if the given value {@code v} is in the bounds of the joint */
-    boolean isInBounds(double v);
+    @JsonIgnore boolean isOutOfBounds(double v);
+    
+    /** @return The value if it is within the bounds of the joint, or the min value if
+     * it is less than the minimum bounds, or the maximum bounds value otherwise */
+    @JsonIgnore double clamp(double v);
     
 }
