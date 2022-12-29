@@ -19,4 +19,14 @@ public class Utils {
         for (int i=1, m=n; i<=k; i++, m--) { b=b*m/i; }
         return b;
     }
+
+    /**
+     * Normalize a real angle in the interval ]-pi, pi]
+     * @param v The angle to normalize
+     * @return The normalized angle
+     */
+    public static double normalizeAngle(double v) {
+        double b = Math.PI * 2;
+        return ((((v + Math.PI) % b) + b) % b) - Math.PI;
+    }
 }
