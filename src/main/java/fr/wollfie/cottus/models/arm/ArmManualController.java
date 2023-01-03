@@ -69,7 +69,7 @@ public class ArmManualController implements ArmManualControllerService {
         if (!this.active) { return; }
 
         kinematicsModule.inverseSolve(armManipulatorService.getArmState(), position, rotation)
-            .onSolution(angles -> {
+            .onUpdate(angles -> {
                 // If a solution is found, the following code executes, otherwise it does not
                 angles.set(angles.size()-1, effectorAngle);
                 ArmSpecification specification = new AngleSpecification(angles);

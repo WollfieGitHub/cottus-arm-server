@@ -2,14 +2,14 @@ package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
 
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
-import fr.wollfie.cottus.utils.maths.Vector3D;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 public class IKFuture {
 
-    private IKCallback onSolutionUpdate;
+    private IKCallback onUpdate;
+    private IKCallback onSolutionComplete;
     private Consumer<NoSolutionException> eHandler;
     
     private IKFuture() {}
@@ -19,11 +19,21 @@ public class IKFuture {
 
     /**
      * Sets the callback that gets invoked when the solver updates a solution
-     * @param onSolutionUpdate What to do when a new solution is updated by the solver
+     * @param onUpdate What to do when a new partial solution is submitted by the solver
      * @return This {@link IKFuture} object
      */
-    public IKFuture onSolution(IKCallback onSolutionUpdate) { 
-        this.onSolutionUpdate = onSolutionUpdate;
+    public IKFuture onUpdate(IKCallback onUpdate) { 
+        this.onUpdate = onUpdate;
+        return this;
+    }
+
+    /**
+     * Sets the callback that gets invoked when the solver updates a solution
+     * @param onSolutionFound What to do when a valid solution is found by the solver
+     * @return This {@link IKFuture} object
+     */
+    public IKFuture onComplete(IKCallback onSolutionFound) {
+        this.onSolutionComplete = onSolutionFound;
         return this;
     }
 
@@ -41,16 +51,29 @@ public class IKFuture {
      * Updates the {@link IKFuture} object with new solution angles
      * @param angles The solution angles
      */
-    public void update(List<Double> angles) {
-        if (this.onSolutionUpdate == null) { return; }
+    public void updateWith(List<Double> angles) {
+        if (this.onUpdate == null) { return; }
         
         try {
-            this.onSolutionUpdate.onValue(angles);
+            this.onUpdate.onValue(angles);
         } catch (AngleOutOfBoundsException e) { this.fail(); }
     }
+
+    /**
+     * Complete the {@link IKFuture} object with new solution angles that are valid
+     * @param angles The solution angles
+     */
+    public void completeWith(List<Double> angles) {
+        if (this.onSolutionComplete == null && this.onUpdate != null) { this.updateWith(angles); }
+        else if (this.onSolutionComplete != null) {
+            try {
+                this.onSolutionComplete.onValue(angles);
+            } catch (AngleOutOfBoundsException e) { this.fail(); }
+        }
+    }
     
-    public void update(AnalyticalIKSolutionProcessor solutionProcessor) {
-        this.update(solutionProcessor.process());
+    public void updateWith(AnalyticalIKSolutionProcessor solutionProcessor) {
+        this.updateWith(solutionProcessor.process());
     }
     
     /**

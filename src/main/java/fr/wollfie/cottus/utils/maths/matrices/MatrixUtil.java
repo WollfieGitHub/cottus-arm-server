@@ -3,6 +3,7 @@ package fr.wollfie.cottus.utils.maths.matrices;
 import fr.wollfie.cottus.utils.Preconditions;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
+import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.function.DoubleUnaryOperator;
@@ -73,5 +74,19 @@ public class MatrixUtil {
     /** @return The translation component of the htMatrix */
     public static Vector3D extractTranslation(SimpleMatrix htMatrix) {
         return multHt(htMatrix, Vector3D.Zero);
+    }
+    
+    /** @return The rotation matrix corresponding to the given rotation */
+    public static SimpleMatrix rotationFrom(Rotation rotation) {
+        Vector3D eulerAngles = rotation.getEulerAngles();
+        double c1 = cos(eulerAngles.x), s1 = sin(eulerAngles.x);
+        double c2 = cos(eulerAngles.y), s2 = sin(eulerAngles.y);
+        double c3 = cos(eulerAngles.z), s3 = sin(eulerAngles.z);
+        
+        return new SimpleMatrix(new double[][] {
+                {          c2*c3,         -c2*s3,     s2 },
+                { c1*s3+c3*s1*s2, c1*c3-s1*s2*s3, -c2*s1 },
+                { s1*s3-c1*c3*s2, c3*s1+c1*s2*s3, c1*c2  },
+        });
     }
 }

@@ -130,7 +130,7 @@ public class EvolutionaryIK implements IKSolver {
                         (double)((current-first)/(1e6*iter)));
 
                 // Once error is small enough, return the angles
-                this.ikFuture.update(getAngles(table, qT));
+                this.ikFuture.updateWith(getAngles(table, qT));
                 executorService.shutdown();
                 return;
             }
@@ -158,7 +158,7 @@ public class EvolutionaryIK implements IKSolver {
             xT = xL[minIndex];
             qT = qL[minIndex];
             
-            ikFuture.update(getAngles(table, qT));
+            ikFuture.updateWith(getAngles(table, qT));
 
             current = System.nanoTime();
             Log.infof("Iteration %3d : %5.3fms - Error : %5.3f", iter, (double)((current-last)/1e6), error);

@@ -83,7 +83,7 @@ public class SimpleJacobianIK implements IKSolver {
             if (IKSolver.errorIsUnderThreshold(xT, xFinal, maxPosError, maxRotError)) 
             {
                 // Once error is small enough, return the angles
-                this.ikFuture.update(getAngles(table, qT));
+                this.ikFuture.updateWith(getAngles(table, qT));
                 
                 current = System.nanoTime();
                 Log.infof("Total : %.3fms, Average %.3fms",
@@ -106,7 +106,7 @@ public class SimpleJacobianIK implements IKSolver {
             xT = updateCurrentPosition();
             
             // Send an update for the angles
-            this.ikFuture.update(getAngles(table, qT));
+            this.ikFuture.updateWith(getAngles(table, qT));
             
             current = System.nanoTime();
             Log.infof("Iteration %3d : %5.3fms, delta : %5.3e - Error : %5.3f, dist : %5.3f",

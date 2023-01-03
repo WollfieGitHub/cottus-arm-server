@@ -3,6 +3,7 @@ package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
+import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.Analytical7DOFsIK;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.EvolutionaryIK;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.SimpleJacobianIK;
 import fr.wollfie.cottus.utils.Constants;
@@ -17,14 +18,15 @@ import org.jetbrains.annotations.NotNull;
 public class KinematicsModule {
     
     private enum IKAlgorithm {
-        SIMPLE_PSEUDO_INVERSE_JACOBIAN,
-        PARALLEL_EVOLUTIONARY_IK,
+        SIMPLE_PSEUDO_INVERSE_JACOBIAN, // Doesn't work, very chaotic
+        PARALLEL_EVOLUTIONARY_IK,       // Work but only for position
+        ANALYTICAL_IK,                  // 
     }
 
     public KinematicsModule() {  }
     
     private Thread ikThread;
-    private static final IKAlgorithm IK_ALGORITHM = IKAlgorithm.SIMPLE_PSEUDO_INVERSE_JACOBIAN;
+    private static final IKAlgorithm IK_ALGORITHM = IKAlgorithm.ANALYTICAL_IK;
 
     /**
      * Provided with the angles of the joints of the arm, returns the position and rotation of 
@@ -61,6 +63,8 @@ public class KinematicsModule {
             IKSolver solver = switch (IK_ALGORITHM) {
                 case PARALLEL_EVOLUTIONARY_IK -> new EvolutionaryIK(this, future);
                 case SIMPLE_PSEUDO_INVERSE_JACOBIAN -> new SimpleJacobianIK(this, future);
+                // TODO CHANGE ARM ANGLE TO VARIABLE
+                case ANALYTICAL_IK -> new Analytical7DOFsIK(this, future, 0);
             };
             // Then start solving ik
             solver.startIKSolve(
