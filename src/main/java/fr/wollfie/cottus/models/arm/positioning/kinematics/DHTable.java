@@ -4,10 +4,8 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.wollfie.cottus.utils.Preconditions;
 import fr.wollfie.cottus.utils.maths.Vector;
+import fr.wollfie.cottus.utils.maths.Vector3D;
 import org.ejml.simple.SimpleMatrix;
-
-import javax.swing.*;
-import java.util.Arrays;
 
 import static java.lang.Math.*;
 
@@ -38,20 +36,25 @@ public class DHTable {
     
     private final int size;
     
-
-    public DHTable(double[] d, double[] a, double[] theta0, double[] alpha, boolean[] virtual) {
+    private DHTable(double[] d, double[] a, double[] theta0, double[] alpha, boolean[] virtual, double[] currTheta) {
         this.size = d.length;
         Preconditions.checkArgument(a.length == size);
         Preconditions.checkArgument(theta0.length == size);
         Preconditions.checkArgument(alpha.length == size);
         Preconditions.checkArgument(virtual.length == size);
+        Preconditions.checkArgument(currTheta.length == size);
         
         this.d = d;
         this.a = a;
         this.theta0 = theta0;
-        this.currTheta = new double[this.size];
         this.alpha = alpha;
         this.virtual = virtual;
+        this.currTheta = currTheta;
+    }
+
+    /** Constructor for a new Denavit-Hartenberg Parameters Table */
+    public DHTable(double[] d, double[] a, double[] theta0, double[] alpha, boolean[] virtual) {
+        this(d, a, theta0, alpha, virtual, new double[d.length]);
     }
 
     /** @return The size of the DH Table, i.e., the number of articulations */
@@ -60,11 +63,12 @@ public class DHTable {
     public double getD(int i) { return this.d[i]; }
     public double getA(int i) { return this.a[i]; }
     public double getTheta(int i) { return this.theta0[i]+this.currTheta[i]; }
+    public double getVarTheta(int i) { return this.currTheta[i]; }
     public double getAlpha(int i) { return this.alpha[i]; }
     public boolean isVirtual(int i) { return this.virtual[i]; }
 
     /** Because all are revolute join, only theta is able to vary */
-    public void setTheta(int i, double value) { this.currTheta[i] = value; }
+    public void setVarTheta(int i, double value) { this.currTheta[i] = value; }
 
     /**
      * Return the transformation matrix which transforms 
@@ -73,18 +77,17 @@ public class DHTable {
      * @return The transformation matrix
      */
     public SimpleMatrix getTransformMatrix(int i) {
+        if (i == 0) { return SimpleMatrix.identity(4); }
+        // The transform of frame -1 to 0 is the identity, otherwise return the transformation
+        // from frame i-1 to i
+        i = i-1;
+        
         return new SimpleMatrix(new double[][]{
                 { cos(getTheta(i)),  -sin(getTheta(i))*cos(alpha[i]),  sin(getTheta(i)*sin(alpha[i])), a[i]*cos(getTheta(i)) },
                 { sin(getTheta(i)),   cos(getTheta(i))*cos(alpha[i]), -cos(getTheta(i))*sin(alpha[i]), a[i]*sin(getTheta(i)) },
                 {             0,                 sin(alpha[i]),                cos(alpha[i]),               d[i] },
                 {             0,                             0,                            0,                  1 }
         });
-    }
-
-    public void setThetas(Vector q) {
-        for (int i = 0; i < size; i++) {
-            if (!isVirtual(i)) { setTheta(i, q.get(i)); }
-        }
     }
 
     /**
@@ -101,8 +104,75 @@ public class DHTable {
         return result;
     }
 
+    /**
+     * Return the rotation matrix which rotates articulation indexed
+     * i-1 to articulation indexed i
+     * @param i The index of the articulation
+     * @return The rotation Matrix
+     */
+    public SimpleMatrix getRotationMatrix(int i) {
+        if (i == 0) { return SimpleMatrix.identity(3); }
+        // The transform of frame -1 to 0 is the identity, otherwise return the transformation
+        // from frame i-1 to i
+        i = i-1;
+        
+        return new SimpleMatrix(new double[][]{
+                { cos(getTheta(i)),  -sin(getTheta(i))*cos(alpha[i]),  sin(getTheta(i)*sin(alpha[i]))},
+                { sin(getTheta(i)),   cos(getTheta(i))*cos(alpha[i]), -cos(getTheta(i))*sin(alpha[i])},
+                {                0,                    sin(alpha[i]),                   cos(alpha[i])},
+        });
+    }
+
+    /**
+     * @param from The index of the articulation with the source space
+     * @param to The index of the articulation with the destination space
+     * @return A rotation matrix that rotates {@code from}'s space into {@code to}'s space
+     */
+    public SimpleMatrix getRotationMatrix(int from, int to) {
+        Preconditions.checkArgument(from <= to);
+        SimpleMatrix result = getRotationMatrix(from);
+        for (int i = from+1; i <= to; i++) {
+            result = result.mult(getRotationMatrix(i));
+        }
+        return result;
+    }
+
+    /**
+     * Return the translation vector which translates 
+     * articulation indexed i-1 to i
+     * @param i The index of the articulation
+     * @return The translation vector
+     */
+    public Vector3D getTranslationVector(int i) {
+        return Vector3D.of(
+                a[i]*cos(getTheta(i)),
+                a[i]*sin(getTheta(i)),
+                d[i]
+        );
+    }
+
+    /**
+     * @param from The index of the articulation with the source space
+     * @param to The index of the articulation with the destination space
+     * @return A translation vector that translates {@code from}'s space into {@code to}'s space
+     */
+    public Vector3D getTranslationVector(int from, int to) {
+        Preconditions.checkArgument(from <= to);
+        Vector3D result = getTranslationVector(from);
+        for (int i = from+1; i <= to; i++) {
+            result = result.plus(getTranslationVector(i));
+        }
+        return result;
+    }
+
+    public void setThetas(Vector q) {
+        for (int i = 0; i < size; i++) {
+            if (!isVirtual(i)) { setVarTheta(i, q.get(i)); }
+        }
+    }
+
     /** Returns a copy of the DH Table */
     public DHTable copy() {
-        return new DHTable(d, a, theta0, alpha, virtual);
+        return new DHTable(d, a, theta0, alpha, virtual, currTheta);
     }
 }

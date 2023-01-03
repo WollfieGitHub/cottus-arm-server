@@ -1,8 +1,5 @@
 package fr.wollfie.cottus.utils.maths;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public enum Axis3D {
     
     X(Vector3D.of(1, 0, 0)),
@@ -23,11 +20,11 @@ public enum Axis3D {
     }
 
     public Vector3D add(Vector3D that) {
-        return unitVector.add(that);
+        return unitVector.plus(that);
     }
 
-    public Vector3D scaledBy(double scalar) { return unitVector.scaledBy(scalar); }
-    public Vector3D subtract(Vector3D that) { return unitVector.subtract(that); }
+    public Vector3D scaledBy(double scalar) { return unitVector.scaled(scalar); }
+    public Vector3D subtract(Vector3D that) { return unitVector.minus(that); }
     public double dot(Vector3D that) { return unitVector.dot(that); }
     public Vector3D cross(Vector3D that) { return unitVector.cross(that); }
     public double normSquared() { return unitVector.normSquared(); } 

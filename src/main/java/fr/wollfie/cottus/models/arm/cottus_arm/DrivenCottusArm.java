@@ -23,7 +23,7 @@ public class DrivenCottusArm implements CottusArm {
     }
 
     @Override  @JsonIgnore
-    public DHTable getDHTable() {
+    public DHTable dhTable() {
         return null;
     }
 

@@ -1,12 +1,11 @@
 package fr.wollfie.cottus.models.animation.pathing;
 
 import fr.wollfie.cottus.dto.ArmAnimation;
-import fr.wollfie.cottus.dto.ArmSpecification;
+import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
-import io.smallrye.mutiny.tuples.Tuple;
 import io.smallrye.mutiny.tuples.Tuple3;
 
 public abstract class EndEffectorAnimation implements ArmAnimation {

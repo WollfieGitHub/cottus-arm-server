@@ -1,4 +1,6 @@
-package fr.wollfie.cottus.utils.maths;
+package fr.wollfie.cottus.utils.maths.rotation;
+
+import fr.wollfie.cottus.utils.maths.Vector3D;
 
 public interface Quaternion {
 

@@ -23,4 +23,9 @@ public class IntervalJointBounds implements JointBounds {
         double result = this.interval.clamped(v);
         return Double.isNaN(result) ? v : result;
     }
+
+    @Override
+    public String toString() {
+        return "IntervalJointBounds{" + interval + '}';
+    }
 }

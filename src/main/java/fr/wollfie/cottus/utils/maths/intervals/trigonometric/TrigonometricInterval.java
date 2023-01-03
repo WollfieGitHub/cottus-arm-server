@@ -2,6 +2,7 @@ package fr.wollfie.cottus.utils.maths.intervals.trigonometric;
 
 import fr.wollfie.cottus.utils.Utils;
 import fr.wollfie.cottus.utils.maths.intervals.ContinuousInterval;
+import io.quarkus.logging.Log;
 
 import static java.lang.Math.*;
 
@@ -13,7 +14,7 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
     /** Upper bound of the trigonometric interval */ 
     protected final double upperBound;
 
-    public TrigonometricInterval(double lowerBound, double upperBound) {
+    private TrigonometricInterval(double lowerBound, double upperBound) {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
@@ -26,15 +27,30 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
 
     /**
      * Creates a trigonometric interval from the specified lower and upper bounds
-     * @param lowerBound The real lower bound
-     * @param upperBound The real upper bound
+     * @param lowerBoundRad The real lower bound
+     * @param upperBoundRad The real upper bound
      * @return A new trigonometric interval
      */
-    public static TrigonometricInterval with(double lowerBound, double upperBound) {
-        double l2 = Utils.normalizeAngle(lowerBound);
-        double u2 = Utils.normalizeAngle(upperBound);
-        if (l2 <= u2) { return new Inner(lowerBound, upperBound); }
-        else { return new Outer(lowerBound, upperBound); }
+    public static TrigonometricInterval with(double lowerBoundRad, double upperBoundRad) {
+        double l2 = Utils.normalizeAngle(lowerBoundRad);
+        double u2 = Utils.normalizeAngle(upperBoundRad);
+
+        if (l2 <= u2) { return new Inner(l2, u2); }
+        else { return new Outer(l2, u2); }
+    }
+
+    /**
+     * Creates a trigonometric interval from the specified lower and upper bounds in degrees
+     * @param lowerBoundDeg The real lower bound in degree
+     * @param upperBoundDeg The real upper bound in degree
+     * @return A new trigonometric interval
+     */
+    public static TrigonometricInterval withDeg(double lowerBoundDeg, double upperBoundDeg) {
+        return TrigonometricInterval.with(Math.toRadians(lowerBoundDeg), Math.toRadians(upperBoundDeg));
+    }
+    
+    private static String intervalToString(double v1, double v2) {
+        return String.format("[%.2fpi, %.2fpi]", v1/PI, v2/PI);
     }
 
     /** Outer trigonometric interval : The interval is of the form : ]-pi, upper, lower, pi] */
@@ -55,6 +71,13 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
             
             if (distanceToLo < distanceToHi) { return lowerBound; }
             else { return upperBound; }
+        }
+
+        @Override
+        public String toString() {
+            return TrigonometricInterval.intervalToString(-PI, upperBound)
+                    + " U "
+                    + TrigonometricInterval.intervalToString(lowerBound, PI);
         }
     }
     
@@ -85,5 +108,12 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
             if (distanceToLo < distanceToHi) { return lowerBound; } 
             else { return upperBound; }
         }
+
+        @Override
+        public String toString() {
+            return TrigonometricInterval.intervalToString(lowerBound, upperBound);
+        }
     }
+    
+    
 }

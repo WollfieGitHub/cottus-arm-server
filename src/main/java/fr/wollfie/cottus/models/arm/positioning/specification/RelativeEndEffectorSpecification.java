@@ -1,11 +1,12 @@
 package fr.wollfie.cottus.models.arm.positioning.specification;
 
+import fr.wollfie.cottus.dto.specification.EndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
 import java.util.List;
 
-public class RelativeEndEffectorSpecification extends EndEffectorSpecification{
+public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
 
     /** True if this specification is the root for others, meaning it should be considered,
      *  once its position is evaluated, as 0 for all following {@link RelativeEndEffectorSpecification}

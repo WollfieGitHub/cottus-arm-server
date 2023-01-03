@@ -25,7 +25,7 @@ public class MatrixUtil {
     }
 
     public static Vector3D mult(SimpleMatrix matrix, Vector3D other) {
-        return mult(matrix, new Vector(other.x, other.y, other.z)).to3D();
+        return mult(matrix, new Vector(other.x, other.y, other.z)).extract3D();
     }
 
     public static Vector3D multHt(SimpleMatrix htMatrix, Vector3D other) {

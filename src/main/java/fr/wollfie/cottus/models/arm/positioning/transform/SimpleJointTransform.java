@@ -66,7 +66,7 @@ public class SimpleJointTransform implements JointTransform {
                 ? getLocalRotation()
                 : Rotation.from(getLocalRotation()
                                 .getEulerAngles()
-                                .add(parent.getGlobalRotation().getEulerAngles()));
+                                .plus(parent.getGlobalRotation().getEulerAngles()));
     }
 
     /** Sets the local rotation of this transform */
@@ -123,7 +123,7 @@ public class SimpleJointTransform implements JointTransform {
 
         Vector3D parentGlobalPosition = parent.getGlobalPosition() ;
         return localPosition.rotatedAtOriginUsing(parent.getGlobalRotation().getEulerAngles())
-                .add(parentGlobalPosition);
+                .plus(parentGlobalPosition);
     }
 
     /**
@@ -136,7 +136,7 @@ public class SimpleJointTransform implements JointTransform {
         if (parent == null) { return globalPosition; }
 
         Vector3D parentGlobalPosition = parent.getGlobalPosition();
-        return globalPosition.subtract(parentGlobalPosition).rotatedInverseAtOriginUsing(
+        return globalPosition.minus(parentGlobalPosition).rotatedInverseAtOriginUsing(
                 parent.getGlobalRotation().getEulerAngles()
         );
     }

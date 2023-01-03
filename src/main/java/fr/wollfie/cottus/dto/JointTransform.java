@@ -31,15 +31,15 @@ public interface JointTransform {
     
     /** @return The x unit vector projected into the transform's local space*/
     @JsonGetter("localX")
-    default Vector3D getX() { return transform(Axis3D.X.unitVector); }
+    default Vector3D getX() { return transform(Axis3D.X.unitVector).minus(getOrigin()); }
     
     /** @return The x unit vector projected into the transform's local space*/
     @JsonGetter("localY")
-    default Vector3D getY() { return transform(Axis3D.Y.unitVector); }
+    default Vector3D getY() { return transform(Axis3D.Y.unitVector).minus(getOrigin()); }
     
     /** @return The x unit vector projected into the transform's local space*/
     @JsonGetter("localZ")
-    default Vector3D getZ() { return transform(Axis3D.Z.unitVector); }
+    default Vector3D getZ() { return transform(Axis3D.Z.unitVector).minus(getOrigin()); }
     
 //=========   ====  == =
 //      JOINT CONTROL

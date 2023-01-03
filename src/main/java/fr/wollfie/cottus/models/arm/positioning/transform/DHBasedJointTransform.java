@@ -28,8 +28,8 @@ public class DHBasedJointTransform implements JointTransform {
     }
 
     @Override
-    public void setAngle(double angleRad) { this.dhTable.setTheta(jointIndex, angleRad); }
+    public void setAngle(double angleRad) { this.dhTable.setVarTheta(jointIndex, angleRad); }
 
     @Override
-    public double getAngle() { return this.dhTable.getTheta(jointIndex); }
+    public double getAngle() { return this.dhTable.getVarTheta(jointIndex); }
 }

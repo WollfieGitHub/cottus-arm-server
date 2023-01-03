@@ -1,7 +1,7 @@
 package fr.wollfie.cottus.utils.maths.rotation;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import fr.wollfie.cottus.utils.maths.Quaternion;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 
 public class Rotation {
@@ -25,6 +25,12 @@ public class Rotation {
     public static Rotation from(Quaternion quaternion) { return new Rotation(quaternion.toEulerAngles()); }
 
     /** @return The rotation as euler angles */
-    public Vector3D getEulerAngles() { return this.eulerAngles; }
-    
+    @JsonGetter("eulerAngles") public Vector3D getEulerAngles() { return this.eulerAngles; }
+
+    @Override
+    public String toString() {
+        return "Rotation{" +
+                "eulerAngles=" + eulerAngles +
+                '}';
+    }
 }

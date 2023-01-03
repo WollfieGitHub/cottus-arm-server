@@ -29,4 +29,13 @@ public class Utils {
         double b = Math.PI * 2;
         return ((((v + Math.PI) % b) + b) % b) - Math.PI;
     }
+
+    /** Puts the thread to sleep for specified duration in milliseconds */
+    public static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

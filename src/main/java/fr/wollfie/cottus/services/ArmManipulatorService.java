@@ -1,6 +1,6 @@
 package fr.wollfie.cottus.services;
 
-import fr.wollfie.cottus.dto.ArmSpecification;
+import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 
@@ -19,4 +19,11 @@ public interface ArmManipulatorService {
 
     /** Sets the given joint the specified angle */
     void setAngle(int jointIndex, double angleRad) throws AngleOutOfBoundsException;
+
+    /**
+     * Return the angle of the joint specified by the index
+     * @param jointIndex The index of the joint
+     * @return The angle of the joint
+     */
+    double getAngle(int jointIndex);
 }

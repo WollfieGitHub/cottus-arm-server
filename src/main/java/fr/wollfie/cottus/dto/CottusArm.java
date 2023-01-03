@@ -2,9 +2,10 @@ package fr.wollfie.cottus.dto;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
+import fr.wollfie.cottus.utils.Preconditions;
+import fr.wollfie.cottus.utils.maths.Vector3D;
 
 import java.util.List;
 
@@ -39,11 +40,28 @@ public interface CottusArm {
         return joints.get(joints.size()-1);
     }
     
+    /** @return The position of the end effector */
+    @JsonGetter("endEffectorPosition")
+    default Vector3D getEndEffectorPos() {
+        return this.getEndEffector().getTransform().getOrigin();
+    }
+    
+    /** @return The reach of the arm in millimeters 
+     * @implNote Works only for this arm */
+    @JsonIgnore
+    default double getReachMm() {
+        double length = 0;
+        for (int i = 0; i < getNbOfJoints(); i++) {
+            length += dhTable().getA(i) + dhTable().getD(i);
+        }
+        return length;
+    }
+    
     /** @return The DH Parameters Table of the arm, used for inverse and forward kinematics */
     @JsonIgnore
-    DHTable getDHTable();
+    DHTable dhTable();
     
-    /** @return The number of articulations, i.e., Degrees of freedom */
+    /** @return The number of articulations (virtual joints included) */
     @JsonGetter("nbJoints")
     default int getNbOfJoints() { return joints().size(); }
 
@@ -70,8 +88,38 @@ public interface CottusArm {
      * @param anglesRad The angles to set in radian
      * @throws AngleOutOfBoundsException If one of the angle is not in the bounds of its joint
      */
-    void setAngles(List<Double> anglesRad) throws AngleOutOfBoundsException;
-
+    default void setAngles(List<Double> anglesRad) throws AngleOutOfBoundsException {
+        Preconditions.checkArgument(anglesRad.size() == this.getNbOfNonVirtualJoints());
+        int i = 0;
+        for (Joint j : joints()) { if (!j.isVirtual()) { j.setAngleRad(anglesRad.get(i++)); } }
+    }
+    
     /** Sets the given joint the specified angle rotation */
-    void setAngle(int jointIndex, double angleRad) throws AngleOutOfBoundsException;
+    default void setAngle(int jointIndex, double angleRad) throws AngleOutOfBoundsException {
+        getJoint(jointIndex, false).setAngleRad(angleRad);
+    }
+
+    /**
+     * Return the angle of the joint specified by the index
+     * @param jointIndex The index of the joint
+     * @return The angle of the joint
+     */
+    default double getAngle(int jointIndex) {
+        return getJoint(jointIndex, false).getAngleRad();
+    }
+    
+    /**
+     * The joint corresponding to the given index. Joints are indexed from 0 (base) to n (end-effector).
+     * @param jointIndex The index of the joint to return
+     * @param includeVirtual Specify if indexing should take into account virtual joints
+     * @return A joint 
+     */
+    default Joint getJoint(int jointIndex, boolean includeVirtual) {
+        return joints().stream()
+                .filter(joint -> includeVirtual || !joint.isVirtual())
+                .toList().get(jointIndex);
+    }
+    
+    /** @return The joint corresponding to the given index. Joints are indexed from 0 (base) to n (end-effector) */
+    default Joint getJoint(int jointIndex) { return getJoint(jointIndex, true); }
 }

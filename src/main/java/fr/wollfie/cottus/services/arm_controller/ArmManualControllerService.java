@@ -1,9 +1,7 @@
 package fr.wollfie.cottus.services.arm_controller;
 
-import fr.wollfie.cottus.dto.ArmSpecification;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
-import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
@@ -53,4 +51,18 @@ public interface ArmManualControllerService extends ArmControllerService {
      * @param axis The global axis 
      */
     void moveEndEffectorBy(float amountMm, Axis3D axis) throws NoSolutionException;
+
+    /**
+     * Rotate the joint to the specified angle in radians
+     * @param jointIndex The index of the joint to mvoe
+     * @param angleRad The angle in radians
+     */
+    void rotateJoint(int jointIndex, double angleRad) throws AngleOutOfBoundsException;
+
+    /**
+     * Return the angle of the joint specified by the index
+     * @param jointIndex The index of the joint
+     * @return The angle of the joint
+     */
+    double getAngle(int jointIndex);
 }

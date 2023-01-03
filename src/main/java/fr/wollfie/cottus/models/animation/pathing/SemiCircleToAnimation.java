@@ -30,7 +30,7 @@ public class SemiCircleToAnimation extends EndEffectorAnimation {
         this.angleRad = toRadians(angleDeg);
         double arcAngle = PI/2.0 - this.angleRad;
         
-        Vector3D chord = endPosition.subtract(Vector3D.Zero);
+        Vector3D chord = endPosition.minus(Vector3D.Zero);
         double chordLength = chord.norm();
         
         double a = sin(arcAngle/2.0);
@@ -43,8 +43,8 @@ public class SemiCircleToAnimation extends EndEffectorAnimation {
         
         this.centerPoint = circleDirection
                 .normalized()
-                .scaledBy(height)
-                .add(chord.scaledBy(0.5));
+                .scaled(height)
+                .plus(chord.scaled(0.5));
         // Vectors orthogonal to the normal, base of the plan of the circle
         this.u = circleDirection.normalized();
         this.v = chord.normalized();
@@ -62,8 +62,8 @@ public class SemiCircleToAnimation extends EndEffectorAnimation {
         // https://www.quora.com/A-problem-in-3D-geometry-what-is-the-equation-of-the-circle-see-details
         return Tuple3.of(
                 this.centerPoint
-                        .add( u.scaledBy(radius * cos(theta)) )
-                        .add( v.scaledBy(radius * sin(theta)) ),
+                        .plus( u.scaled(radius * cos(theta)) )
+                        .plus( v.scaled(radius * sin(theta)) ),
                 Rotation.Identity,
                 0.0
         );

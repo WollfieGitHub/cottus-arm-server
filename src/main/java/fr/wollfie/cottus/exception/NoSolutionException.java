@@ -1,6 +1,6 @@
 package fr.wollfie.cottus.exception;
 
-import fr.wollfie.cottus.dto.ArmSpecification;
+import fr.wollfie.cottus.dto.specification.ArmSpecification;
 
 /** Used when there is no found solution to a problem. Often means
  * that the operation depending on the resolution of the problem has

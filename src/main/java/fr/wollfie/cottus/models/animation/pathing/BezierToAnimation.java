@@ -45,7 +45,7 @@ public class BezierToAnimation extends EndEffectorAnimation {
 
         for (int k = 0; k < n; k++) {
             double bernsteinCoefficient = binomial(k, n) * pow(t, k) * pow(1 - t, n - k);
-            result = result.add(anchorPoints.get(k).scaledBy(bernsteinCoefficient));
+            result = result.plus(anchorPoints.get(k).scaled(bernsteinCoefficient));
         }
 
         return Tuple3.of(result, Rotation.Identity, 0.0);

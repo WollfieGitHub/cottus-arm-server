@@ -7,10 +7,12 @@ import fr.wollfie.cottus.models.arm.positioning.joints.JointImpl;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.transform.DHBasedJointTransform;
 import fr.wollfie.cottus.services.ArmLoaderService;
+import io.quarkus.logging.Log;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @ApplicationScoped

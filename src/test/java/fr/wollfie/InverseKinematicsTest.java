@@ -1,6 +1,6 @@
 package fr.wollfie;
 
-import fr.wollfie.cottus.dto.ArmSpecification;
+import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
@@ -13,8 +13,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import java.util.List;
 
+import static java.lang.Math.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -27,22 +27,23 @@ public class InverseKinematicsTest {
     
     @Test
     void inverseKinematicsIsFastEnough() throws NoSolutionException, AngleOutOfBoundsException {
-        Vector3D goalPos = Vector3D.of(400, 0, 500);
+        Vector3D goalPos = Vector3D.of(20,0, 753.2-40);
 
-        ArmSpecification specification = new AngleSpecification( 0, 0, 0, 0, 0, 0, 0 );
+        ArmSpecification specification = new AngleSpecification( 0, -PI, 0, -PI, 0, -PI, 0 );
         manipulatorService.moveGiven(specification);
         
         long last = System.currentTimeMillis();
         
         manualControllerService.moveEndEffectorWith(
-                goalPos, Rotation.Identity, Math.PI/2.0
+                goalPos, 
+                Rotation.from(Vector3D.of(0, 1.0, 0)), 
+                PI/2.0
         );
         long current = System.currentTimeMillis();
         
-        List<Joint> joints = manipulatorService.getArmState().joints();
-        Joint joint = joints.get(joints.size()-1);
+        Joint joint = manipulatorService.getArmState().getEndEffector();
         
-        double error = joint.getTransform().getOrigin().subtract(goalPos).norm();
+        double error = joint.getTransform().getOrigin().minus(goalPos).norm();
         assertThat(error, lessThan(1.0));
         assertTrue(current-last < 50);
     }

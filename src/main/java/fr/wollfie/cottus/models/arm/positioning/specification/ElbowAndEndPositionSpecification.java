@@ -1,6 +1,6 @@
 package fr.wollfie.cottus.models.arm.positioning.specification;
 
-import fr.wollfie.cottus.dto.ArmSpecification;
+import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 
 import java.util.ArrayList;

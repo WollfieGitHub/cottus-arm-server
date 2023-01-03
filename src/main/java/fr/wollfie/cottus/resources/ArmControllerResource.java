@@ -2,13 +2,11 @@ package fr.wollfie.cottus.resources;
 
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
+import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import fr.wollfie.cottus.utils.maths.Axis3D;
-import fr.wollfie.cottus.utils.maths.Vector3D;
-import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -24,42 +22,32 @@ public class ArmControllerResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Uni<Response> moveArmGiven(JsonObject body) throws NoSolutionException {
-        return Uni.createFrom().item(body)
-            .onItem().transform(b -> {
-                Vector3D pos = Vector3D.of(
-                        b.getDouble("xPos"),
-                        b.getDouble("yPos"),
-                        b.getDouble("zPos"));
-
-                Vector3D euler = Vector3D.of(
-                        b.getDouble("eulerX"),
-                        b.getDouble("eulerY"),
-                        b.getDouble("eulerZ"));
-
-                try {
-                    armManualControllerService.moveEndEffectorWith( pos, Rotation.from(euler), b.getDouble("rotRad") );
-                    return Response.ok().build();
-                } catch (NoSolutionException e) {
-                    e.printStackTrace();
-                    return Response.status(Response.Status.BAD_REQUEST).build();
-                }
-            });
+    public Uni<Response> moveArmGiven(AbsoluteEndEffectorSpecification specification) {
+        Log.info(specification);
+        return Uni.createFrom().item(specification).onItem().transform(b -> {
+            try {
+                Log.info(b);
+                armManualControllerService.moveEndEffectorWith( 
+                        b.getEndEffectorPosition(),
+                        b.getEndEffectorOrientation(), 
+                        b.getEndEffectorAngleRad());
+                return Response.ok().build();
+            } catch (NoSolutionException e) {
+                e.printStackTrace();
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        });
     }
 
     @POST
-    @Path("/angle")
+    @Path("/angle-diff")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.TEXT_PLAIN)
-    public Uni<Response> setAngle(@QueryParam("n") int n, float angleRad) {
-        final int i = n;
+    public Uni<Response> rotateJointBy(@QueryParam("joint") final int jointIndex, final float deltaAngle) {
         return Uni.createFrom().item(() -> {
-            int i2 = i;
             try {
-                if (i2 >= 2) { i2+=1; }
-                if (i2 >= 5) { i2+=1; }
-                if (i2 >= 8) { i2+=1; }
-                armManualControllerService.setAngle(i2, angleRad);
+                double angle = armManualControllerService.getAngle(jointIndex);
+                armManualControllerService.setAngle(jointIndex, angle+deltaAngle);
             } catch (AngleOutOfBoundsException e) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
@@ -67,6 +55,21 @@ public class ArmControllerResource {
         });
     }
 
+    @POST
+    @Path("/angle")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.TEXT_PLAIN)
+    public Uni<Response> setAngle(@QueryParam("joint") final int jointIndex, final float angle) {
+        return Uni.createFrom().item(() -> {
+            try {
+                armManualControllerService.setAngle(jointIndex, angle);
+            } catch (AngleOutOfBoundsException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+            return Response.ok().build();
+        });
+    }
+    
     private static final long IK_RATE_LIMIT_MS = 100;
     private long lastMs = System.currentTimeMillis();
     

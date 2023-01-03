@@ -1,9 +1,8 @@
 package fr.wollfie.cottus.models.arm.positioning.specification;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import fr.wollfie.cottus.dto.ArmSpecification;
+import fr.wollfie.cottus.dto.specification.ArmSpecification;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

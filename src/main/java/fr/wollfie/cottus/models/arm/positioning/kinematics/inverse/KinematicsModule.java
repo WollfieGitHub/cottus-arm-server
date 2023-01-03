@@ -5,6 +5,8 @@ import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.EvolutionaryIK;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.SimpleJacobianIK;
+import fr.wollfie.cottus.utils.Constants;
+import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
@@ -12,17 +14,17 @@ import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
 public class KinematicsModule {
     
-    /** Max error on position */
-    private static final double ALPHA = 1.0;
-    /** Max error on rotation */
-    private static final double BETA = 0.5;
+    private enum IKAlgorithm {
+        SIMPLE_PSEUDO_INVERSE_JACOBIAN,
+        PARALLEL_EVOLUTIONARY_IK,
+    }
 
     public KinematicsModule() {  }
+    
+    private Thread ikThread;
+    private static final IKAlgorithm IK_ALGORITHM = IKAlgorithm.SIMPLE_PSEUDO_INVERSE_JACOBIAN;
 
     /**
      * Provided with the angles of the joints of the arm, returns the position and rotation of 
@@ -33,9 +35,10 @@ public class KinematicsModule {
      */
     @NotNull public Vector forward(DHTable table, Vector angles) {
         table.setThetas(angles);
-        SimpleMatrix transform = table.getTransformMatrix(0,table.size() -1);
-        Vector3D translation = MatrixUtil.extractTranslation(transform);
-        Vector3D rotation = MatrixUtil.extractRotation(transform) ;
+        int n = table.size()-1;
+        SimpleMatrix t0n = table.getTransformMatrix(0, n);
+        Vector3D translation = MatrixUtil.extractTranslation(t0n);
+        Vector3D rotation = MatrixUtil.multHt(t0n, Axis3D.Z.unitVector).minus(translation);
         return new Vector(translation.x, translation.y, translation.z, rotation.x, rotation.y, rotation.z);
     }
 
@@ -44,32 +47,30 @@ public class KinematicsModule {
      * @param endEffectorPosition The position of the end effector in world space
      * @param endEffectorRotation The orientation of the end effector in world space
      * @return The set of angles that allow the arm to position itself as desired
-     * @throws NoSolutionException If there is no solution to set the angles to obtain the desired arm configuration
      */
-    public List<Double> inverseSolve(
+    public IKFuture inverseSolve(
             CottusArm arm,
             Vector3D endEffectorPosition,
             Rotation endEffectorRotation
-    ) throws NoSolutionException {
-        IKSolver module = new SimpleJacobianIK(this);
-        return module.ikSolve(
-                arm, endEffectorPosition, endEffectorRotation,
-                1.0, KinematicsModule::defaultFitness
-        );
+    ) {
+        IKFuture future = IKFuture.createNew();
+        if (this.ikThread != null) { this.ikThread.interrupt(); }
+        
+        this.ikThread = new Thread(() -> {
+            // Choose which algorithm to use
+            IKSolver solver = switch (IK_ALGORITHM) {
+                case PARALLEL_EVOLUTIONARY_IK -> new EvolutionaryIK(this, future);
+                case SIMPLE_PSEUDO_INVERSE_JACOBIAN -> new SimpleJacobianIK(this, future);
+            };
+            // Then start solving ik
+            solver.startIKSolve(
+                    arm, endEffectorPosition, endEffectorRotation,
+                    10.0, Math.toRadians(5)
+            );
+        });
+        this.ikThread.start();
+        return future;
         // Default 24, 12, 32
     }
-
-
-    /** @return The index of the bred item with minimum fitness */
-    private static double defaultFitness(Vector xCurr, Vector xGoal) {
-        return  (
-                (xGoal.get(0)-xCurr.get(0)) * (xGoal.get(0)-xCurr.get(0))
-                        + (xGoal.get(1)-xCurr.get(1)) * (xGoal.get(1)-xCurr.get(1))
-                        + (xGoal.get(2)-xCurr.get(2)) * (xGoal.get(2)-xCurr.get(2))
-        ) * ALPHA + ( // IMPORTANCE OF TRANSLATION
-                (xGoal.get(3)-xCurr.get(3)) * (xGoal.get(3)-xCurr.get(3))
-                        + (xGoal.get(4)-xCurr.get(4)) * (xGoal.get(4)-xCurr.get(4))
-                        + (xGoal.get(5)-xCurr.get(5)) * (xGoal.get(5)-xCurr.get(5))
-        ) * BETA; // IMPORTANCE OF ROTATION;
-    }
+    
 }
