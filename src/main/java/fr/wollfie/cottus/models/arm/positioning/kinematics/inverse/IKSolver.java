@@ -1,13 +1,18 @@
 package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
 
 import fr.wollfie.cottus.dto.CottusArm;
+import fr.wollfie.cottus.dto.JointBounds;
+import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
+import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import org.ejml.simple.SimpleMatrix;
+
+import java.util.List;
 
 public interface IKSolver {
     
@@ -17,16 +22,15 @@ public interface IKSolver {
      * Solve the inverse kinematics problem given the position in cartesian space of the end effector
      * and a way to compute the error between the current position and the desired position
      * @param arm The arm 
-     * @param position The position in 3d space
-     * @param rotation The rotation in 3d space
-     * @param maxPosError The max acceptable error for the position in millimeters
+     * @param endEffectorSpecification Position, rotation, and preferred arm angle in 3D space
      * @param maxRotError The max acceptable error for the rotation in radians
+     * @throws NoSolutionException When there is no acceptable solution for the given parameters
      */
-    void startIKSolve(
+    List<Double> startIKSolve(
             CottusArm arm,
-            Vector3D position, Rotation rotation,
+            AbsoluteEndEffectorSpecification endEffectorSpecification,
             double maxPosError, double maxRotError
-    );
+    ) throws NoSolutionException;
     
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -90,6 +94,13 @@ public interface IKSolver {
         }
 
         return MatrixUtil.from(cols);
+    }
+
+    /** Clamp all the angles to the bounds of their joints */
+    static Vector getBoundedAngles(Vector initialAngles, List<JointBounds> bounds) {
+        double[] clampedValues = new double[initialAngles.dim];
+        for (int i = 0; i < initialAngles.dim; i++) { clampedValues[i] = bounds.get(i).clamped(initialAngles.get(i)); }
+        return new Vector(clampedValues);
     }
 
 // //======================================================================================\\

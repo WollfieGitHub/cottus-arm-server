@@ -230,4 +230,10 @@ public class Vector3D extends Vector {
         };
         return new SimpleMatrix(values);
     }
+    
+    /** @return The radius of this vector in the cylindrical coordinate system */
+    public double getRadius() { return sqrt(x*x + y*y); }
+    
+    /** @return The angle of this vector in the cylindrical coordinate system */
+    public double getTheta() { return atan2(y,x); }
 }

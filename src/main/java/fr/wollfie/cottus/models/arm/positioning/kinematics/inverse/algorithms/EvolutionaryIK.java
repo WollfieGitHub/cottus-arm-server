@@ -3,10 +3,12 @@ package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.dto.JointBounds;
+import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.IKFuture;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.IKSolver;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.KinematicsModule;
+import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
@@ -34,18 +36,14 @@ public class EvolutionaryIK implements IKSolver {
 
     private SimpleMatrix jacobian;
     private SimpleMatrix[][] jacobians;
-    private Vector[][] qTs;
-    private Vector[][] xLs;
+    private Vector[][] qTs, xLs;
     private Vector xFinal;
     private Random random;
     private DHTable table;
     private int n;
-    private Vector qT;
-    private Vector xT;
-    private double alphaT;
-    private double standardDeviation;
+    private Vector qT, xT;
+    private double alphaT, standardDeviation;
     private List<JointBounds> bounds;
-    private final IKFuture ikFuture;
 
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -53,12 +51,7 @@ public class EvolutionaryIK implements IKSolver {
 // ||                                                                                      ||
 // \\======================================================================================//
     
-    private final KinematicsModule kinematics;
-
-    public EvolutionaryIK(KinematicsModule kinematicsModule, IKFuture future) {
-        this.kinematics = kinematicsModule;
-        this.ikFuture = future;
-    }
+    public EvolutionaryIK() { }
 
     /** 
      * Explanation of algorithm (from the paper) :
@@ -68,10 +61,10 @@ public class EvolutionaryIK implements IKSolver {
      * from this position, Q2t.
      * */
     @Override
-    public void startIKSolve(
-            CottusArm arm, Vector3D pos, Rotation rotation,
+    public List<Double> startIKSolve(
+            CottusArm arm, AbsoluteEndEffectorSpecification specification,
             double maxPosError, double maxRotError
-    ) {
+    ) throws NoSolutionException {
         final int nbIndividuals = 12;
         final int nbThreads = 24;
         
@@ -87,8 +80,9 @@ public class EvolutionaryIK implements IKSolver {
         // We don't care about the end effector's end angle
         n = arm.getNbOfJoints();
         // Desired configuration of the end effector
-        Vector3D rot = rotation.getEulerAngles();
+        Vector3D rot = specification.getEndEffectorOrientation().getEulerAngles();
         Vector3D zAxis = Axis3D.Z.rotatedAtOriginUsing(rot);
+        Vector3D pos = specification.getEndEffectorPosition();
         xFinal = new Vector(pos.x, pos.y, pos.z, zAxis.x, zAxis.y, zAxis.z);
         
         // Forward kinematic function
@@ -96,7 +90,7 @@ public class EvolutionaryIK implements IKSolver {
         // Current joint configuration (angles) of the arm
         qT = new Vector(IntStream.range(0, n).mapToDouble(table::getVarTheta).toArray());
         // Current configuration (position and rotation) of the end effector
-        xT = kinematics.forward(table, qT);
+        xT = KinematicsModule.forward(table, qT);
         
         // Attenuation factor that governs convergence speed of the algorithm
         standardDeviation = (maxPosError+maxRotError)/2.0;
@@ -130,9 +124,8 @@ public class EvolutionaryIK implements IKSolver {
                         (double)((current-first)/(1e6*iter)));
 
                 // Once error is small enough, return the angles
-                this.ikFuture.updateWith(getAngles(table, qT));
                 executorService.shutdown();
-                return;
+                return getAngles(table, qT);
             }
             
             // Fork with multiple threads and randomly generate jacobians with "White Noise"
@@ -158,14 +151,12 @@ public class EvolutionaryIK implements IKSolver {
             xT = xL[minIndex];
             qT = qL[minIndex];
             
-            ikFuture.updateWith(getAngles(table, qT));
-
             current = System.nanoTime();
             Log.infof("Iteration %3d : %5.3fms - Error : %5.3f", iter, (double)((current-last)/1e6), error);
             last = current;
         }
         executorService.shutdown();
-        ikFuture.fail();
+        throw new NoSolutionException();
     }
 
     @NotNull
@@ -183,10 +174,10 @@ public class EvolutionaryIK implements IKSolver {
         Vector deltaQT = MatrixUtil.mult(jacobians[l][kl].pseudoInverse(), xFinal.minus(xT).scaled(alphaT));
         // Clamp the values so that they respect the bounds 
         double[] values = qT.plus(deltaQT).getValues();
-        for (int i = 0; i < n; i++) { values[i] = this.bounds.get(i).clamp(values[i]); }
+        for (int i = 0; i < n; i++) { values[i] = this.bounds.get(i).clamped(values[i]); }
         
         qTs[l][kl] = new Vector(values);
-        xLs[l][kl] = kinematics.forward(table, qTs[l][kl]);
+        xLs[l][kl] = KinematicsModule.forward(table, qTs[l][kl]);
 
     }
 

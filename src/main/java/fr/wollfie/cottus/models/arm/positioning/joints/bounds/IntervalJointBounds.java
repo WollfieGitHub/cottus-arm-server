@@ -18,8 +18,9 @@ public class IntervalJointBounds implements JointBounds {
 
     public static IntervalJointBounds of(Interval interval) { return new IntervalJointBounds(interval); }
     
-    @Override public boolean isOutOfBounds(double v) { return !this.interval.contains(v); }
-    @Override public double clamp(double v) {
+    // TODO EDIT BACK
+    @Override public boolean isOutOfBounds(double v) { return false; /*return !this.interval.contains(v);*/ }
+    @Override public double clamped(double v) {
         double result = this.interval.clamped(v);
         return Double.isNaN(result) ? v : result;
     }

@@ -9,7 +9,5 @@ public class NoSolutionException extends Exception {
 
     public NoSolutionException() { }
 
-    public NoSolutionException(ArmSpecification specification) {
-        super(specification.getAngles().toString());
-    }
+    public NoSolutionException(String message) { super(message); }
 }

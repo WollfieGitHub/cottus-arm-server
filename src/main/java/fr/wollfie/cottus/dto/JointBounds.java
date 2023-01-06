@@ -9,6 +9,6 @@ public interface JointBounds {
     
     /** @return The value if it is within the bounds of the joint, or the min value if
      * it is less than the minimum bounds, or the maximum bounds value otherwise */
-    @JsonIgnore double clamp(double v);
+    @JsonIgnore double clamped(double v);
     
 }

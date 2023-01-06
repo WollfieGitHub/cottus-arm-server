@@ -93,10 +93,10 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
 
         @Override
         public double clampedNormalized(double v) {
-            if (this.contains(v)) { return v; }
+            if (this.containsNormalized(v)) { return v; }
 
             double distanceToHi, distanceToLo;
-
+            
             if (v <= lowerBound) {
                 distanceToHi = (v + 2 * PI) - upperBound;
                 distanceToLo = lowerBound - v;
@@ -104,7 +104,7 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
                 distanceToLo = lowerBound - (v - 2 * PI);
                 distanceToHi = v - upperBound;
             }
-
+            
             if (distanceToLo < distanceToHi) { return lowerBound; } 
             else { return upperBound; }
         }

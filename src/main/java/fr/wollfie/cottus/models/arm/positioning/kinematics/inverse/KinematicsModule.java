@@ -1,20 +1,25 @@
 package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
 
 import fr.wollfie.cottus.dto.CottusArm;
+import fr.wollfie.cottus.dto.specification.EndEffectorSpecification;
 import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.Analytical7DOFsIK;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.EvolutionaryIK;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.SimpleJacobianIK;
-import fr.wollfie.cottus.utils.Constants;
+import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
+import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
-import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.util.concurrent.CompletableFuture;
+
+@ApplicationScoped
 public class KinematicsModule {
     
     private enum IKAlgorithm {
@@ -25,9 +30,8 @@ public class KinematicsModule {
 
     public KinematicsModule() {  }
     
-    private Thread ikThread;
     private static final IKAlgorithm IK_ALGORITHM = IKAlgorithm.ANALYTICAL_IK;
-
+    
     /**
      * Provided with the angles of the joints of the arm, returns the position and rotation of 
      * the end effector
@@ -35,7 +39,8 @@ public class KinematicsModule {
      * @return The position and rotation of the arm in the form {@code Vector[pos.x, pos.y, pos.z, rot.x, rot.y, rot.z]}
      * where {@code pos} is the position and {@code rot} is the euler angles of the rotation
      */
-    @NotNull public Vector forward(DHTable table, Vector angles) {
+    @NotNull 
+    public static Vector forward(DHTable table, Vector angles) {
         table.setThetas(angles);
         int n = table.size()-1;
         SimpleMatrix t0n = table.getTransformMatrix(0, n);
@@ -46,35 +51,34 @@ public class KinematicsModule {
 
     /**
      * @param arm The state of the arm. Info on actuators max/min angles and length will be used
-     * @param endEffectorPosition The position of the end effector in world space
-     * @param endEffectorRotation The orientation of the end effector in world space
+     * @param endEffectorSpecification The position and rotation of the end effector in world space,
+     *                                with specific arm angle
      * @return The set of angles that allow the arm to position itself as desired
      */
-    public IKFuture inverseSolve(
-            CottusArm arm,
-            Vector3D endEffectorPosition,
-            Rotation endEffectorRotation
+    public static IKFuture inverseSolve(
+            CottusArm arm, EndEffectorSpecification endEffectorSpecification
     ) {
-        IKFuture future = IKFuture.createNew();
-        if (this.ikThread != null) { this.ikThread.interrupt(); }
+        AbsoluteEndEffectorSpecification absoluteEndEffectorSpecification;
+        if (endEffectorSpecification instanceof RelativeEndEffectorSpecification relativeSpecification) {
+            absoluteEndEffectorSpecification = relativeSpecification.toAbsolute(arm);
+        // Otherwise the specification is absolute
+        } else { absoluteEndEffectorSpecification = (AbsoluteEndEffectorSpecification) endEffectorSpecification; }
         
-        this.ikThread = new Thread(() -> {
-            // Choose which algorithm to use
+        // Need this weird stuff because of lambda's difficulty to deal with checked expression
+        IKFuture ikFuture = new IKFuture();
+        CompletableFuture.runAsync(() -> {
             IKSolver solver = switch (IK_ALGORITHM) {
-                case PARALLEL_EVOLUTIONARY_IK -> new EvolutionaryIK(this, future);
-                case SIMPLE_PSEUDO_INVERSE_JACOBIAN -> new SimpleJacobianIK(this, future);
+                case PARALLEL_EVOLUTIONARY_IK -> new EvolutionaryIK();
+                case SIMPLE_PSEUDO_INVERSE_JACOBIAN -> new SimpleJacobianIK();
                 // TODO CHANGE ARM ANGLE TO VARIABLE
-                case ANALYTICAL_IK -> new Analytical7DOFsIK(this, future, 0);
+                case ANALYTICAL_IK -> new Analytical7DOFsIK();
             };
             // Then start solving ik
-            solver.startIKSolve(
-                    arm, endEffectorPosition, endEffectorRotation,
-                    10.0, Math.toRadians(5)
-            );
+            try { ikFuture.complete(
+                solver.startIKSolve(arm, absoluteEndEffectorSpecification, 10.0, Math.toRadians(5))
+            ); } catch (NoSolutionException e) { ikFuture.completeExceptionally(e); }
         });
-        this.ikThread.start();
-        return future;
-        // Default 24, 12, 32
+        return ikFuture;
     }
     
 }

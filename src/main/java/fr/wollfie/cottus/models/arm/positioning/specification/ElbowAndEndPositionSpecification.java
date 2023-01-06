@@ -1,5 +1,6 @@
 package fr.wollfie.cottus.models.arm.positioning.specification;
 
+import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 
@@ -20,7 +21,7 @@ public class ElbowAndEndPositionSpecification implements ArmSpecification {
     }
 
     @Override
-    public List<Double> getAngles() {
+    public List<Double> getAnglesFor(CottusArm cottusArm) {
         List<Double> angles = new ArrayList<>();
 
         angles.set(6, endEffectorAngleRad);

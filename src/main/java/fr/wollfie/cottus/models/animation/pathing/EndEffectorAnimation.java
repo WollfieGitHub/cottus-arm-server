@@ -10,7 +10,7 @@ import io.smallrye.mutiny.tuples.Tuple3;
 
 public abstract class EndEffectorAnimation implements ArmAnimation {
 
-    private boolean firstFrame = true;
+    private AbsoluteEndEffectorSpecification firstFrame = null;
     
     /** 
      * Whether the end effector's configuration is given :
@@ -27,9 +27,14 @@ public abstract class EndEffectorAnimation implements ArmAnimation {
     public ArmSpecification evaluateAt(double secFromStart) {
         Tuple3<Vector3D, Rotation, Double> frame = this.relativeEvaluateAt(secFromStart);
         if (this.relative) {
-            RelativeEndEffectorSpecification result = new RelativeEndEffectorSpecification(frame.getItem1(), frame.getItem2(), frame.getItem3());
-            if (firstFrame) { result.setRoot(true); firstFrame = false; }
-            return result;
+            // If it is the first frame, create the reference for all the frames
+            if (firstFrame == null) { firstFrame = new AbsoluteEndEffectorSpecification(
+                    frame.getItem1(), frame.getItem2(), frame.getItem3()
+            ); }
+            // And return the frame with a link to the first frame
+            return RelativeEndEffectorSpecification.createRelativeTo(
+                    firstFrame, frame.getItem1(), frame.getItem2(), frame.getItem3()
+            );
         } else {
             return new AbsoluteEndEffectorSpecification(frame.getItem1(), frame.getItem2(), frame.getItem3());
         }

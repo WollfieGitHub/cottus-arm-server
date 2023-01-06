@@ -63,6 +63,7 @@ public class DHTable {
     public double getD(int i) { return this.d[i]; }
     public double getA(int i) { return this.a[i]; }
     public double getTheta(int i) { return this.theta0[i]+this.currTheta[i]; }
+    public double getTheta0(int i) { return this.theta0[i]; }
     public double getVarTheta(int i) { return this.currTheta[i]; }
     public double getAlpha(int i) { return this.alpha[i]; }
     public boolean isVirtual(int i) { return this.virtual[i]; }
@@ -77,11 +78,6 @@ public class DHTable {
      * @return The transformation matrix
      */
     public SimpleMatrix getTransformMatrix(int i) {
-        if (i == 0) { return SimpleMatrix.identity(4); }
-        // The transform of frame -1 to 0 is the identity, otherwise return the transformation
-        // from frame i-1 to i
-        i = i-1;
-        
         return new SimpleMatrix(new double[][]{
                 { cos(getTheta(i)),  -sin(getTheta(i))*cos(alpha[i]),  sin(getTheta(i)*sin(alpha[i])), a[i]*cos(getTheta(i)) },
                 { sin(getTheta(i)),   cos(getTheta(i))*cos(alpha[i]), -cos(getTheta(i))*sin(alpha[i]), a[i]*sin(getTheta(i)) },
@@ -97,8 +93,9 @@ public class DHTable {
      */
     public SimpleMatrix getTransformMatrix(int from, int to) {
         Preconditions.checkArgument(from <= to);
-        SimpleMatrix result = getTransformMatrix(from);
-        for (int i = from+1; i <= to; i++) {
+        // Matrix that transforms from to from+1
+        SimpleMatrix result = SimpleMatrix.identity(4);
+        for (int i = from; i < to; i++) {
             result = result.mult(getTransformMatrix(i));
         }
         return result;
@@ -111,11 +108,6 @@ public class DHTable {
      * @return The rotation Matrix
      */
     public SimpleMatrix getRotationMatrix(int i) {
-        if (i == 0) { return SimpleMatrix.identity(3); }
-        // The transform of frame -1 to 0 is the identity, otherwise return the transformation
-        // from frame i-1 to i
-        i = i-1;
-        
         return new SimpleMatrix(new double[][]{
                 { cos(getTheta(i)),  -sin(getTheta(i))*cos(alpha[i]),  sin(getTheta(i)*sin(alpha[i]))},
                 { sin(getTheta(i)),   cos(getTheta(i))*cos(alpha[i]), -cos(getTheta(i))*sin(alpha[i])},
@@ -130,37 +122,11 @@ public class DHTable {
      */
     public SimpleMatrix getRotationMatrix(int from, int to) {
         Preconditions.checkArgument(from <= to);
-        SimpleMatrix result = getRotationMatrix(from);
-        for (int i = from+1; i <= to; i++) {
+        // Matrix that transforms from to from+1
+        SimpleMatrix result = SimpleMatrix.identity(3);
+        for (int i = from; i < to; i++) {
+            // Rest of the transformations
             result = result.mult(getRotationMatrix(i));
-        }
-        return result;
-    }
-
-    /**
-     * Return the translation vector which translates 
-     * articulation indexed i-1 to i
-     * @param i The index of the articulation
-     * @return The translation vector
-     */
-    public Vector3D getTranslationVector(int i) {
-        return Vector3D.of(
-                a[i]*cos(getTheta(i)),
-                a[i]*sin(getTheta(i)),
-                d[i]
-        );
-    }
-
-    /**
-     * @param from The index of the articulation with the source space
-     * @param to The index of the articulation with the destination space
-     * @return A translation vector that translates {@code from}'s space into {@code to}'s space
-     */
-    public Vector3D getTranslationVector(int from, int to) {
-        Preconditions.checkArgument(from <= to);
-        Vector3D result = getTranslationVector(from);
-        for (int i = from+1; i <= to; i++) {
-            result = result.plus(getTranslationVector(i));
         }
         return result;
     }

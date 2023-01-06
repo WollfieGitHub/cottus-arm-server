@@ -2,10 +2,11 @@ package fr.wollfie.cottus.resources;
 
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
+import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.KinematicsModule;
 import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
+import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;
+import fr.wollfie.cottus.services.ArmManipulatorService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
-import fr.wollfie.cottus.utils.maths.Axis3D;
-import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
 
 import javax.inject.Inject;
@@ -16,28 +17,41 @@ import javax.ws.rs.core.Response;
 @Path("/api/arm-controller")
 public class ArmControllerResource {
     
-    @Inject
-    ArmManualControllerService armManualControllerService;
+    @Inject ArmManualControllerService armManualControllerService;
+    
+// //======================================================================================\\
+// ||                                                                                      ||
+// ||                                       WITH SPECIFICATION                             ||
+// ||                                                                                      ||
+// \\======================================================================================//
     
     @POST
+    @Path("absolute-specification")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Uni<Response> moveArmGiven(AbsoluteEndEffectorSpecification specification) {
-        Log.info(specification);
+    public Uni<Response> moveArmTo(AbsoluteEndEffectorSpecification specification) {
         return Uni.createFrom().item(specification).onItem().transform(b -> {
-            try {
-                Log.info(b);
-                armManualControllerService.moveEndEffectorWith( 
-                        b.getEndEffectorPosition(),
-                        b.getEndEffectorOrientation(), 
-                        b.getEndEffectorAngleRad());
-                return Response.ok().build();
-            } catch (NoSolutionException e) {
-                e.printStackTrace();
-                return Response.status(Response.Status.BAD_REQUEST).build();
-            }
+            armManualControllerService.moveTo( b );
+            return Response.ok().build();
         });
     }
+
+    @POST
+    @Path("relative-specification")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Uni<Response> moveArmBy(RelativeEndEffectorSpecification specification) {
+        return Uni.createFrom().item(specification).onItem().transform(b -> {
+            armManualControllerService.moveTo( b );
+            return Response.ok().build();
+        });
+    }
+    
+// //======================================================================================\\
+// ||                                                                                      ||
+// ||                                       WITH JOINT ANGLE                               ||
+// ||                                                                                      ||
+// \\======================================================================================//
 
     @POST
     @Path("/angle-diff")
@@ -70,25 +84,4 @@ public class ArmControllerResource {
         });
     }
     
-    private static final long IK_RATE_LIMIT_MS = 100;
-    private long lastMs = System.currentTimeMillis();
-    
-    @POST
-    @Path("/end-effector/rotate")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.TEXT_PLAIN)
-    public Uni<Response> rotateEndEffector(@QueryParam("axis") int axisId, float amountMm) {
-        return Uni.createFrom().item(() -> {
-            // Rate limit the calls to IK module
-            long currentMs = System.currentTimeMillis();
-            if (currentMs - lastMs < IK_RATE_LIMIT_MS) { return Response.ok().build(); }
-            lastMs = currentMs;
-            
-            try {
-                armManualControllerService.moveEndEffectorBy(amountMm, Axis3D.fromId(axisId));
-                
-            } catch (NoSolutionException e) { return Response.status(Response.Status.BAD_REQUEST).build(); }
-            return Response.ok().build();
-        });
-    }
 }

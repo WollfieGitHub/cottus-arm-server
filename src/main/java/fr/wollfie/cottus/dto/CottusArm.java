@@ -4,8 +4,12 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
+import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.utils.Preconditions;
 import fr.wollfie.cottus.utils.maths.Vector3D;
+import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
+import fr.wollfie.cottus.utils.maths.rotation.Rotation;
+import io.quarkus.logging.Log;
 
 import java.util.List;
 
@@ -18,6 +22,12 @@ import java.util.List;
  */
 public interface CottusArm {
 
+// //======================================================================================\\
+// ||                                                                                      ||
+// ||                                       FIND JOINTS                                    ||
+// ||                                                                                      ||
+// \\======================================================================================//
+    
     /** @return The articulations of the arm */
     @JsonGetter("joints")
     List<Joint> joints();
@@ -39,12 +49,27 @@ public interface CottusArm {
         List<Joint> joints = joints();
         return joints.get(joints.size()-1);
     }
-    
-    /** @return The position of the end effector */
-    @JsonGetter("endEffectorPosition")
-    default Vector3D getEndEffectorPos() {
-        return this.getEndEffector().getTransform().getOrigin();
+
+    /**
+     * The joint corresponding to the given index. Joints are indexed from 0 (base) to n (end-effector).
+     * @param jointIndex The index of the joint to return
+     * @param includeVirtual Specify if indexing should take into account virtual joints
+     * @return A joint 
+     */
+    default Joint getJoint(int jointIndex, boolean includeVirtual) {
+        return joints().stream()
+                .filter(joint -> includeVirtual || !joint.isVirtual())
+                .toList().get(jointIndex);
     }
+
+    /** @return The joint corresponding to the given index. Joints are indexed from 0 (base) to n (end-effector) */
+    default Joint getJoint(int jointIndex) { return getJoint(jointIndex, true); }
+    
+// //======================================================================================\\
+// ||                                                                                      ||
+// ||                                       GENERAL ARM INFO                               ||
+// ||                                                                                      ||
+// \\======================================================================================//
     
     /** @return The reach of the arm in millimeters 
      * @implNote Works only for this arm */
@@ -82,7 +107,64 @@ public interface CottusArm {
                 .filter(articulation -> articulationName.equals(articulation.getName()))
                 .findFirst().orElse(null);
     }
+    
+// //======================================================================================\\
+// ||                                                                                      ||
+// ||                                       END EFFECTOR INFO                              ||
+// ||                                                                                      ||
+// \\======================================================================================//
 
+    /** @return The position of the end effector */
+    @JsonGetter("endEffectorPosition")
+    default Vector3D getEndEffectorPosition() {
+        return this.getEndEffector().getTransform().getOrigin();
+    }
+
+    /**
+     * @return The orientation of the end effector
+     */
+    @JsonGetter("endEffectorOrientation")
+    default Rotation getEndEffectorOrientation() {
+        return Rotation.from(MatrixUtil.extractRotation(this.dhTable().getRotationMatrix(0, this.getNbOfJoints()-1)));
+    }
+
+    /** @return The current arm angle. It is the angle formed between the plane_0 and plane_phi where 
+     * <ul>
+     *     <li>plane_0 is the plane formed by The base, The Shoulder, The Wrist</li>
+     *     <li>plane_0 is the plane formed by The base, The Elbow, The Wrist</li>
+     * </ul>
+     */
+    @JsonGetter("armAngle")
+    default double getArmAngle() {
+        Vector3D base = this.getJoint(0).getTransform().getOrigin();
+        Vector3D shoulder = this.getJoint(2).getTransform().getOrigin();
+        Vector3D elbow = this.getJoint(3).getTransform().getOrigin();
+        Vector3D wrist = this.getJoint(5).getTransform().getOrigin();
+        
+        Vector3D plane0Normal = shoulder.minus(base).cross( wrist.minus(base) );
+        Vector3D planePhiNormal = elbow.minus(base).cross( wrist.minus(base) );
+
+        if (plane0Normal.isNan() || planePhiNormal.isNan()) { return Double.NaN; }
+        
+        return plane0Normal.angleTo(planePhiNormal);
+    }
+
+    /** @return The specification of the arm based on the end effector's position, 
+     * orientation and the arm's angle */
+    default AbsoluteEndEffectorSpecification getEndEffectorSpecification() {
+        return new AbsoluteEndEffectorSpecification(
+                this.getEndEffectorPosition(),
+                this.getEndEffectorOrientation(),
+                this.getArmAngle()
+        );
+    }
+
+// //======================================================================================\\
+// ||                                                                                      ||
+// ||                                       JOINT ANGLES                                   ||
+// ||                                                                                      ||
+// \\======================================================================================//
+    
     /**
      * Sets the angle in radian for each articulation, from root to nbOfArticulations
      * @param anglesRad The angles to set in radian
@@ -108,18 +190,4 @@ public interface CottusArm {
         return getJoint(jointIndex, false).getAngleRad();
     }
     
-    /**
-     * The joint corresponding to the given index. Joints are indexed from 0 (base) to n (end-effector).
-     * @param jointIndex The index of the joint to return
-     * @param includeVirtual Specify if indexing should take into account virtual joints
-     * @return A joint 
-     */
-    default Joint getJoint(int jointIndex, boolean includeVirtual) {
-        return joints().stream()
-                .filter(joint -> includeVirtual || !joint.isVirtual())
-                .toList().get(jointIndex);
-    }
-    
-    /** @return The joint corresponding to the given index. Joints are indexed from 0 (base) to n (end-effector) */
-    default Joint getJoint(int jointIndex) { return getJoint(jointIndex, true); }
 }

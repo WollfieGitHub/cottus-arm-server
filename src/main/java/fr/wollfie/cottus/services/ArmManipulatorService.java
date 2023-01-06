@@ -1,8 +1,8 @@
 package fr.wollfie.cottus.services;
 
-import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
+import fr.wollfie.cottus.models.arm.positioning.specification.AngleSpecification;
 
 public interface ArmManipulatorService {
     
@@ -12,7 +12,7 @@ public interface ArmManipulatorService {
      * @throws AngleOutOfBoundsException if one of the specification is not in bounds with the 
      * maximum/minimum angles of the robot
      */
-    void moveGiven(ArmSpecification specification) throws AngleOutOfBoundsException;
+    void moveGiven(AngleSpecification specification) throws AngleOutOfBoundsException;
 
     /** @return The current state of the arm, i.e., a pointer to the Arm Object */
     CottusArm getArmState();

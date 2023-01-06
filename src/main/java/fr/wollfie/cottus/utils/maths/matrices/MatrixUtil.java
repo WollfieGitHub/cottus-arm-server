@@ -86,7 +86,7 @@ public class MatrixUtil {
         return new SimpleMatrix(new double[][] {
                 {          c2*c3,         -c2*s3,     s2 },
                 { c1*s3+c3*s1*s2, c1*c3-s1*s2*s3, -c2*s1 },
-                { s1*s3-c1*c3*s2, c3*s1+c1*s2*s3, c1*c2  },
+                { s1*s3-c1*c3*s2, c3*s1+c1*s2*s3,  c1*c2 },
         });
     }
 }

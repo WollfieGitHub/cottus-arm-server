@@ -7,8 +7,11 @@ import org.ejml.data.Matrix;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 public class Vector {
     
@@ -138,6 +141,14 @@ public class Vector {
         return true;
     }
 
+    /** @return True if the vector has any coordinate that is {@link Double#NaN}, false otherwise */
+    public boolean isNan() {
+        for (double value : values) {
+            if (Double.isNaN(value)) { return false; }
+        }
+        return true;
+    }
+
     /**
      * Clamp the values of the vector that exceed min (max) to min (max)
      * @param min The minimum value
@@ -165,5 +176,10 @@ public class Vector {
             values[i][0] = this.values[i];
         }
         return new SimpleMatrix(values);
+    }
+
+    /** @return This vector with its values as a list */
+    public List<Double> toList() {
+        return DoubleStream.of(this.values).boxed().collect(Collectors.toList());
     }
 }

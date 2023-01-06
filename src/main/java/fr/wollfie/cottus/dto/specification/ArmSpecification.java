@@ -3,8 +3,10 @@ package fr.wollfie.cottus.dto.specification;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.dto.JointBounds;
+import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
+import io.quarkus.logging.Log;
 
 import java.util.List;
 
@@ -15,26 +17,12 @@ import java.util.List;
 public interface ArmSpecification {
 
     /**
-     * @return The *7* angles, from root to end effector,
+     * Return the list of #{@link CottusArm#getNbOfJoints()} angles for the arm
+     * for the given specification
+     * @param cottusArm A reference to the arm
+     * @return The set of angles that satisfy this specification for the 
      */
-    List<Double> getAngles();
-
-    /**
-     * Creates a new Arm Specification by specifying only the position of
-     * the end effector
-     * @param endPosition The position in 3D space of the end effector
-     * @param endRotation The proper rotation in 3D space of the end effector
-     * @param endAngle The end effector's angle
-     * @return The arm specification
-     */
-    static ArmSpecification fromEnd(
-            Vector3D endPosition,
-            Rotation endRotation,
-            double endAngle,
-            boolean relativePosition
-    ) {
-        return null;
-    }
+    List<Double> getAnglesFor(CottusArm cottusArm) throws NoSolutionException;
 
     /** @return True if the specification is actually realisable by the arm given the joints' limits */
     default boolean isValidGiven(CottusArm arm) {
@@ -42,16 +30,19 @@ public interface ArmSpecification {
                 .filter(joint -> !joint.isVirtual())
                 .map(Joint::getBounds).toList();
         
-        List<Double> angles = getAngles();
-        for (int i = 0; i < bounds.size(); i++) {
-            JointBounds b = bounds.get(i);
-            double angle = angles.get(i);
-            
-            if (b.isOutOfBounds(angle)) {
-                System.out.println(b + ", " + angle);
-                return false;
+        try {
+            List<Double> angles = getAnglesFor(arm);
+            for (int i = 0; i < bounds.size(); i++) {
+                JointBounds b = bounds.get(i);
+                double angle = angles.get(i);
+
+                if (b.isOutOfBounds(angle)) {
+                    Log.errorf("Joint %d : %5.2fpi is out of bounds for %s", i, angle/Math.PI, b);
+                    return false;
+                }
             }
-        }
-        return true;
+            return true;
+        
+        } catch (NoSolutionException e) { return false; }
     }
 }

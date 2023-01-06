@@ -33,4 +33,9 @@ public class Rotation {
                 "eulerAngles=" + eulerAngles +
                 '}';
     }
+
+    /** @return The rotation resulting of {@code this} rotation composed with {@code that} rotation */
+    public Rotation plus(Rotation that) {
+        return Rotation.from(this.eulerAngles.plus(that.eulerAngles));
+    }
 }

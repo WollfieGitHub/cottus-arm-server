@@ -3,10 +3,12 @@ package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.dto.JointBounds;
+import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.IKFuture;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.IKSolver;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.KinematicsModule;
+import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
@@ -25,9 +27,6 @@ public class SimpleJacobianIK implements IKSolver {
     private DHTable table;
     private int n;
     
-    private final KinematicsModule kinematics;
-    private final IKFuture ikFuture;
-    
     private Vector xFinal, xT, dX, qT, dQT;
     private Vector[] cols;
     private SimpleMatrix jacobianInverse, jacobian;
@@ -37,16 +36,13 @@ public class SimpleJacobianIK implements IKSolver {
     private static final double STEP_SIZE = 0.5*1000;
     private static final double THETA_MAX_STEP = 0.2;
 
-    public SimpleJacobianIK(KinematicsModule kinematics, IKFuture ikFuture) {
-        this.kinematics = kinematics;
-        this.ikFuture = ikFuture;
-    }
+    public SimpleJacobianIK() { }
 
     @Override
-    public void startIKSolve(
-            CottusArm arm, Vector3D position, Rotation rotation,
+    public List<Double> startIKSolve(
+            CottusArm arm, AbsoluteEndEffectorSpecification specification,
             double maxPosError, double maxRotError
-    ) {
+    ) throws NoSolutionException {
         this.arm = arm;
         long first, last, current;
         first = System.nanoTime();
@@ -59,9 +55,10 @@ public class SimpleJacobianIK implements IKSolver {
         n = arm.getNbOfJoints();
         
         // Desired configuration of the end effector
-        Vector3D rot = rotation.getEulerAngles();
+        Vector3D rot = specification.getEndEffectorOrientation().getEulerAngles();
         // Rotate the Z axis of the base frame
         Vector3D zAxis = Axis3D.Z.rotatedAtOriginUsing(rot);
+        Vector3D position = specification.getEndEffectorPosition();
         xFinal = new Vector(position.x, position.y, position.z, zAxis.x, zAxis.y, zAxis.z);
         
         // Current joint configuration (angles) of the arm
@@ -82,14 +79,12 @@ public class SimpleJacobianIK implements IKSolver {
             // Test if the error is small enough
             if (IKSolver.errorIsUnderThreshold(xT, xFinal, maxPosError, maxRotError)) 
             {
-                // Once error is small enough, return the angles
-                this.ikFuture.updateWith(getAngles(table, qT));
-                
                 current = System.nanoTime();
                 Log.infof("Total : %.3fms, Average %.3fms",
                         (double)(current-first)/1e6,
                         (double)((current-first)/(1e6*outerIter)));
-                return;
+                // Once error is small enough, return the angles
+                return getAngles(table, qT);
             }
             
             jacobian = IKSolver.computeJacobianWithCross(n, table, xT);
@@ -101,12 +96,9 @@ public class SimpleJacobianIK implements IKSolver {
             // Compute the difference in angle to get closer to result
             dQT = MatrixUtil.mult(jacobianInverse, dX).clamped(-THETA_MAX_STEP, +THETA_MAX_STEP);
             // Update the angles according to our guess on the diff
-            qT = getBoundedAngles( qT.plus(dQT) );
+            qT = IKSolver.getBoundedAngles( qT.plus(dQT), this.bounds );
             // And update the position in cartesian space
             xT = updateCurrentPosition();
-            
-            // Send an update for the angles
-            this.ikFuture.updateWith(getAngles(table, qT));
             
             current = System.nanoTime();
             Log.infof("Iteration %3d : %5.3fms, delta : %5.3e - Error : %5.3f, dist : %5.3f",
@@ -120,7 +112,7 @@ public class SimpleJacobianIK implements IKSolver {
         }
         
         // The algorithm couldn't converge
-        this.ikFuture.fail();
+        throw new NoSolutionException();
     }
 
     /** Converts the vector of angles into a list of angles */
@@ -130,15 +122,8 @@ public class SimpleJacobianIK implements IKSolver {
         return angles;
     }
 
-    /** Clamp all the angles to the bounds of their joints */
-    private Vector getBoundedAngles(Vector initialAngles) {
-        double[] clampedValues = initialAngles.getValues();
-        for (int i = 0; i < n; i++) { clampedValues[i] = this.bounds.get(i).clamp(clampedValues[i]); }
-        return new Vector(clampedValues);
-    }
-
     /** Returns the position of the end effector given the current table and angles */
-    private Vector updateCurrentPosition() { return kinematics.forward(table, qT); }
+    private Vector updateCurrentPosition() { return KinematicsModule.forward(table, qT); }
 
     
 }
