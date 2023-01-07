@@ -26,6 +26,11 @@ public class IntervalJointBounds implements JointBounds {
     }
 
     @Override
+    public double getLowerBound() { return this.interval.clamped(-Math.PI); }
+    @Override
+    public double getUpperBound() { return this.interval.clamped(Math.PI); }
+
+    @Override
     public String toString() {
         return "IntervalJointBounds{" + interval + '}';
     }

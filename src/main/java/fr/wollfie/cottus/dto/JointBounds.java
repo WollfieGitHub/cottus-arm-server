@@ -11,4 +11,9 @@ public interface JointBounds {
      * it is less than the minimum bounds, or the maximum bounds value otherwise */
     @JsonIgnore double clamped(double v);
     
+    /** @return The lower bound of the joint's bounds */
+    double getLowerBound();
+    
+    /** @return The upper bound of the joint's bounds */
+    double getUpperBound();
 }

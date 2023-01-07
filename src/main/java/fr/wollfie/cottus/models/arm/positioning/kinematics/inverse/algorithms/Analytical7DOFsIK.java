@@ -12,6 +12,7 @@ import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.intervals.ContinuousInterval;
 import fr.wollfie.cottus.utils.maths.intervals.Interval;
+import fr.wollfie.cottus.utils.maths.intervals.trigonometric.TrigonometricInterval;
 import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
 import org.ejml.simple.SimpleMatrix;
 
@@ -24,7 +25,7 @@ import static java.lang.Math.*;
 public class Analytical7DOFsIK implements IKSolver {
 
     private DHTable table;
-    private double phi, cPhi, sPhi;
+    private double psi, cPsi, sPsi;
     
     // Translation vectors
     private Vector3D lBs, lSe, lEw, lWt;
@@ -60,7 +61,9 @@ public class Analytical7DOFsIK implements IKSolver {
     
     public Analytical7DOFsIK( ) { }
     
-    /** @implNote Adaptation of <a href="https://ieeexplore.ieee.org/document/9734617">Y. Wang, L. Li and G. Li, "An Analytical 
+    /**
+     * Note : This algorithm only exposes one solution when some joints have multiple possible angles 
+     * @implNote Adaptation of <a href="https://ieeexplore.ieee.org/document/9734617">Y. Wang, L. Li and G. Li, "An Analytical 
      * Solution for Inverse Kinematics of 7-DOF Redundant Manipulators with Offsets at Elbow and Wrist," 2022 IEEE 6th 
      * Information Technology and Mechatronics Engineering Conference (ITOEC), 2022, pp. 1096-1103,
      * doi: 10.1109/ITOEC53115.2022.9734617.</a>
@@ -70,13 +73,14 @@ public class Analytical7DOFsIK implements IKSolver {
             CottusArm arm, AbsoluteEndEffectorSpecification specification,
             double maxPosError, double maxRotError
     ) throws NoSolutionException {
+        
         table = arm.dhTable().copy();
         table.setThetas( Vector.Zero(table.size()) );
         
         // Compute cos and sin of arm angle
-        this.phi = specification.getPreferredArmAngle();
-        this.cPhi = cos(phi);
-        this.sPhi = sin(phi);
+        this.psi = specification.getPreferredArmAngle();
+        this.cPsi = cos(psi);
+        this.sPsi = sin(psi);
         
         // Rotate the Z axis around the Y axis so that default rotation is end effector pointing
         // towards X axis
@@ -163,15 +167,15 @@ public class Analytical7DOFsIK implements IKSolver {
         // TODO ONLY VALID ANGLES
         List<Double> angles = solution.toList();
         
-        Interval feasibleArmAngles = computeFeasibleAngles(bounds);
+        Interval feasibleArmAngles = getFeasibleAngles(bounds);
         
         if (angles.stream().anyMatch(a -> a.isNaN())) { throw new NoSolutionException(); } 
         else { return angles; }
     }
 
-    /** @return The value of (a_ij * sinPhi + b_ij * cosPhi + c_ij */
-    private double getCoefficient(int i, int j, SimpleMatrix a, SimpleMatrix b, SimpleMatrix c) {
-        return a.get(i,j)*sPhi + b.get(i, j)*cPhi + c.get(i,j);
+    /** @return The value of (a_ij * sinPsi + b_ij * cosPsi + c_ij */
+    private double getCoefficient(int i, int j, SimpleMatrix a, SimpleMatrix b, SimpleMatrix c, double factor) {
+        return factor * (a.get(i,j)*sPsi + b.get(i, j)*cPsi + c.get(i,j));
     }
 
 //=========   ====  == =
@@ -230,19 +234,19 @@ public class Analytical7DOFsIK implements IKSolver {
         // Tangent joint type
         if (jointAnalyticInfo instanceof TangentJointInfo tJ) {
             return atan2( 
-                    tJ.f1 * getCoefficient(tJ.r1,tJ.c1,a,b,c), 
-                    tJ.f2 * getCoefficient(tJ.r2,tJ.c2,a,b,c)
+                    getCoefficient(tJ.r1,tJ.c1,a,b,c, tJ.f1), 
+                    getCoefficient(tJ.r2,tJ.c2,a,b,c, tJ.f2)
             );
         // Cosine joint type
         } else if (jointAnalyticInfo instanceof CosineJointInfo cJ){
-            return acos( cJ.f * getCoefficient(cJ.r,cJ.c,a,b,c));
+            return acos( getCoefficient(cJ.r,cJ.c,a,b,c, cJ.f));
         // Not possible
         } else { throw new IllegalStateException("Joint should be either of type Cosine or Tangent"); }
     }
     
 // //======================================================================================\\
 // ||                                                                                      ||
-// ||                                       JOINT LIMIT AVOIDANCE                          ||
+// ||                             FEASIBLE ARM ANGLES GIVEN JOINT LIMITS                   ||
 // ||                                                                                      ||
 // \\======================================================================================//
     
@@ -251,63 +255,158 @@ public class Analytical7DOFsIK implements IKSolver {
 //      COMPUTE ARM ANGLE DEPENDING ON JOINT TYPE
 //=========   ====  == =
     
-    /** @return The set of feasible arm angles for the Cosine Type */
-    private Interval getArmAngleForMonotonicFunction(
-            double a, double b, double c, 
-            double theta, JointBounds bounds
+    /** @return The result of the equation c = a*sinx + b*cosx, solved for x */
+    private double solveBase(double a, double b, double c) {
+        return 2 * atan2(a - sqrt(a*a + b*b - c*c), b+c);
+    }
+    
+    /** @return psi = f-1(theta_i) */
+    private double getPsiForCosTypeTheta(
+            CosCoefficients t, double theta
     ) {
-        if (!MathUtils.isZero(sin(theta))) {
-            double phiLo = cos(theta) - c;
-            
-            double phiHi = 2 * atan2(a, (-b-sqrt(a*a + b*b)));
-        } else {
-            if (MathUtils.isZero(a*a + b*b - (c-1)*(c-1))) { return Interval.unique(2 * atan2(b-(c-1), a)); }
-            else { return Interval.unique(2 * atan2(b-(c+1), a)); }
-        }
+        // We have "cos(theta) = asin(psi) + bsin(psi) + c" => Derive "psi = f-1(theta)"
+        double k = cos(theta)-t.c;
+        return this.solveBase(t.a, t.b, k);
     }
 
-    private Interval getArmAngleForCyclicFunction(
-            double a1, double b1, double c1,
-            double a2, double b2, double c2,
-            double theta, JointBounds bounds
-    ) {
-        double tMin, tMax, tHi, tLo;
-        // 5 CASES
-        // 1.
-        if (tMin > tHi || tMax < tLo) { return Interval.EMPTY; }  // 1.
-        if (tMin < tLo && tMax <= tHi) { /* Solve equation t(phi) = tLo */ }   // 2.
-        if (tLo <= tMin && tMin <= tHi  && tMax > tHi) { /* Solve equation t(phi) = tHi */ } // 3.
-        if (tMin < tLo && tMax > tHi) { /* Exclude  2 regions: Solve equation t(phi) = tLo and t(phi) = tHi */ } // 4.
-        if (tLo <= tMin && tMin <= tHi && tLo <= tMax && tMax <= tHi) { return Interval.REAL; }
+    /** @return psi = f-1(theta_i). Two solutions : result[0] < result[1] */
+    private double[] getPsiForTanTypeTheta(TanCoefficients t, double theta) {
+        // TODO VERIFY THIS BIT
+        // We only need to solve for the cos, but it must respect the sin
+        double k1 = cos(theta)-t.c1;
+        double psi1 = this.solveBase(t.a1, t.a2, k1);
+        
+        if (MathUtils.isZero(abs(
+                tan(theta) - (t.a1 * sin(psi1) + t.b1 * cos(psi1) + t.c1) /
+                (t.a2 * sin(psi1) + t.b2 * cos(psi1) + t.c2)
+        ))) {
+            // Two solutions
+            return new double[] { min(psi1, PI-psi1), max(psi1, PI-psi1) };
+        // No solution : Theta is a singularity
+        } else { return new double[0]; }
+    }
+    
+    /** @return Theta_i = f(psi) */
+    private double getTanTypeThetaForPsi(TanCoefficients t, double psi) {
+        return atan2(
+                t.a1 * sin(psi) + t.b1 * cos(psi) + t.c1,
+                t.a2 * sin(psi) + t.b2 * cos(psi) + t.c2
+        );
+    }
+    
+    private double[] getGlobalExtremesForCyclicFunction(TanCoefficients t) {
+        double at = t.b2*t.c1 - t.b1*t.c2;
+        double bt = t.a1*t.c2 - t.a2*t.c1;
+        double ct = t.a1*t.b2 - t.a2*t.b1;
+        
+        double delta = at*at + bt*bt - ct*ct;
+        if (delta < 0) { return new double[0]; }
+        else if (MathUtils.isZero(delta)) { return new double[] { 2*atan2(at, bt-ct) }; }
+        else { return new double[] {
+                2 * atan2(at - sqrt(delta), bt-ct),
+                2 * atan2(at + sqrt(delta), bt-ct),
+        }; }
     }
 
 //=========   ====  == =
 //      COMPUTE INTERVAL OF FEASIBLE ARM ANGLES
 //=========   ====  == =
+    private record CosCoefficients(double a, double b, double c) {};
     
-    private Interval getArmAngle(
+    private record TanCoefficients(
+            double a1, double b1, double c1,
+            double a2, double b2, double c2
+    ) {}
+
+    /** Compute the interval of feasible arm angles */
+    private Interval getFeasibleArmAngle(
             JointAnalyticInfo jointInfo, JointBounds bounds,
             SimpleMatrix a, SimpleMatrix b, SimpleMatrix c
     ) {
-        if (jointInfo instanceof CosineJointInfo cJ) { return getArmAngleForMonotonicFunction(
-                a.get(cJ.r, cJ.c), b.get(cJ.r, cJ.c), c.get(cJ.r, cJ.c), /* TODO */ 0, bounds
-        );} else if (jointInfo instanceof TangentJointInfo tJ) { return getArmAngleForCyclicFunction(
-                a.get(tJ.r1, tJ.c1), b.get(tJ.r1, tJ.c1), c.get(tJ.r1, tJ.c1),
-                a.get(tJ.r2, tJ.c2), b.get(tJ.r2, tJ.c2), c.get(tJ.r2, tJ.c2), /* TODO */ 0, bounds
-        ); }
+        if (jointInfo instanceof CosineJointInfo cJ) { 
+            CosCoefficients coefficients = new CosCoefficients(
+                    cJ.f * a.get(cJ.r, cJ.c), cJ.f * b.get(cJ.r, cJ.c), cJ.f * c.get(cJ.r, cJ.c)
+            );
+            
+            return TrigonometricInterval.from(
+                    getPsiForCosTypeTheta(coefficients, bounds.getLowerBound()), 
+                    getPsiForCosTypeTheta(coefficients, bounds.getUpperBound())
+            );
+        } else if (jointInfo instanceof TangentJointInfo tJ) {
+            double tLo, tHi, tMin, tMax;
+            double[] psiLo, psiHi;
+            
+            TanCoefficients coefficients = new TanCoefficients(
+                    tJ.f1 * a.get(tJ.r1, tJ.c1), tJ.f1 * b.get(tJ.r1, tJ.c1), tJ.f1 * c.get(tJ.r1, tJ.c1),
+                    tJ.f2 * a.get(tJ.r2, tJ.c2), tJ.f2 * b.get(tJ.r2, tJ.c2), tJ.f2 * c.get(tJ.r2, tJ.c2)
+            );
+            
+            double[] extremes = getGlobalExtremesForCyclicFunction( coefficients );
+            
+            tLo = bounds.getLowerBound();
+            psiLo = getPsiForTanTypeTheta(coefficients, tLo);
+            tHi = bounds.getUpperBound();
+            psiHi = getPsiForTanTypeTheta(coefficients, tHi);
+            
+            // Function is monotonic
+            if (extremes.length == 0) { 
+                double t1 = getTanTypeThetaForPsi(coefficients, PI);
+                double t2 = getTanTypeThetaForPsi(coefficients, -PI);
+                
+                if (t1 < t2) { tMin = t1; tMax = t2; }
+                else { tMin = t2; tMax = t1; }
+            }
+            // Singular arm angle
+            else if (extremes.length == 1) {
+                // Determine sign of limits difference
+                double t1 = getTanTypeThetaForPsi(coefficients, extremes[0]-0.0001);
+                double t2 = getTanTypeThetaForPsi(coefficients, extremes[0]+0.0001);
+                
+                if (t1 < t2) { // Graph 3.d in the paper
+                    tMin = getTanTypeThetaForPsi(coefficients, -PI);
+                    tMax = getTanTypeThetaForPsi(coefficients, PI);
+                } else { // Graph 3.c in the paper
+                    tMin = t2;
+                    tMax = t1;
+                }
+            }
+            // Function is cyclic
+            else {
+                double t1 = getTanTypeThetaForPsi(coefficients, extremes[0]);
+                double t2 = getTanTypeThetaForPsi(coefficients, extremes[1]);
+
+                if (t1 < t2) { tMin = t1; tMax = t2; }
+                else { tMin = t2; tMax = t1; }
+            }
+
+            // 5 CASES :
+            Interval domain = ContinuousInterval.from(-PI, PI);
+            Interval regionLo = ContinuousInterval.from(psiLo[0], psiLo[0]);
+            Interval regionHi = ContinuousInterval.from(psiHi[0], psiHi[0]);;
+            // 1. No feasible regions of the arm angle exist.
+            if (tMin > tHi || tMax < tLo) { return Interval.EMPTY; }
+            // 2. Solve equation t(psi) = tLo
+            if (tMin < tLo && tMax <= tHi) { return regionLo; }
+            // 3. Solve equation t(psi) = tHi
+            if (tLo <= tMin && tMin <= tHi  && tMax > tHi) { return regionHi; }
+            // 4. Exclude  2 regions: Solve equation t(psi) = tLo and t(psi) = tHi
+            if (tMin < tLo && tMax > tHi) { return domain.minus(regionLo).minus(regionHi); }
+            // 5. The entire domain is feasible.
+            if (tLo <= tMin && tMin <= tHi && tLo <= tMax && tMax <= tHi) { return domain; }
+        }
         throw new IllegalStateException("Joint should be either of type Cosine or Tangent");
     }
 
     /** @return An interval representing all feasible arm angles given the bounds of the joints */
-    private Interval computeFeasibleAngles(List<JointBounds> bounds) {
+    private Interval getFeasibleAngles(List<JointBounds> bounds) {
         // Theta 4 is independent of the arm angle
-        Interval i0 = getArmAngle(JOINT_ANALYTIC_INFO_MAP.get(0), bounds.get(0), aS, bS, cS);
-        Interval i1 = getArmAngle(JOINT_ANALYTIC_INFO_MAP.get(1), bounds.get(1), aS, bS, cS);
-        Interval i2 = getArmAngle(JOINT_ANALYTIC_INFO_MAP.get(2), bounds.get(2), aS, bS, cS);
+        Interval i0 = getFeasibleArmAngle(JOINT_ANALYTIC_INFO_MAP.get(0), bounds.get(0), aS, bS, cS);
+        Interval i1 = getFeasibleArmAngle(JOINT_ANALYTIC_INFO_MAP.get(1), bounds.get(1), aS, bS, cS);
+        Interval i2 = getFeasibleArmAngle(JOINT_ANALYTIC_INFO_MAP.get(2), bounds.get(2), aS, bS, cS);
 
-        Interval i4 = getArmAngle(JOINT_ANALYTIC_INFO_MAP.get(4), bounds.get(4), aW, bW, cW);
-        Interval i5 = getArmAngle(JOINT_ANALYTIC_INFO_MAP.get(5), bounds.get(5), aW, bW, cW);
-        Interval i6 = getArmAngle(JOINT_ANALYTIC_INFO_MAP.get(6), bounds.get(6), aW, bW, cW);
+        Interval i4 = getFeasibleArmAngle(JOINT_ANALYTIC_INFO_MAP.get(4), bounds.get(4), aW, bW, cW);
+        Interval i5 = getFeasibleArmAngle(JOINT_ANALYTIC_INFO_MAP.get(5), bounds.get(5), aW, bW, cW);
+        Interval i6 = getFeasibleArmAngle(JOINT_ANALYTIC_INFO_MAP.get(6), bounds.get(6), aW, bW, cW);
         return Interval.and(i0, i1, i2, i4, i5, i6).and(ContinuousInterval.from(-PI, PI));
     }
 
