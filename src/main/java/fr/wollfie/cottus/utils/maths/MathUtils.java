@@ -64,4 +64,20 @@ public class MathUtils {
         if (v < min) { return min; }
         return Math.min(v, max);
     }
+    
+    /** @return Min, but that supports nan */
+    public static double minWithNan(double v1, double v2) {
+        if (Double.isNaN(v1)) { return v2; }
+        if (Double.isNaN(v2)) { return v1; }
+        
+        return Math.min(v1, v2);
+    }
+
+    /** @return Max, but that supports nan */
+    public static double maxWithNan(double v1, double v2) {
+        if (Double.isNaN(v1)) { return v2; }
+        if (Double.isNaN(v2)) { return v1; }
+
+        return Math.max(v1, v2);
+    }
 }

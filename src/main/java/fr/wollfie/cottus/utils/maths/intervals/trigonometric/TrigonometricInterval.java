@@ -14,7 +14,7 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
     protected final double upperBound;
 
     private TrigonometricInterval(double lowerBound, double upperBound) {
-        super(lowerBound, upperBound);
+        super(min(lowerBound, upperBound), max(lowerBound, upperBound));
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }

@@ -1,6 +1,7 @@
 package fr.wollfie.cottus.utils.maths.intervals;
 
 import fr.wollfie.cottus.utils.Preconditions;
+import io.quarkus.logging.Log;
 
 /** A continuous interval */
 public class ContinuousInterval implements Interval {
@@ -14,7 +15,7 @@ public class ContinuousInterval implements Interval {
     };
 
     public ContinuousInterval(double lowerBound, double upperBound) {
-        Preconditions.checkArgument(lowerBound < upperBound);
+        Preconditions.checkArgument(lowerBound <= upperBound);
 
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
