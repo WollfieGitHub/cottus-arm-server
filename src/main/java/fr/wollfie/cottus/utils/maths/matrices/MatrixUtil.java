@@ -61,13 +61,22 @@ public class MatrixUtil {
     
     /** @return The rotation component of the htMatrix */
     public static Vector3D extractRotation(SimpleMatrix htMatrix) {
-        double x = atan2(htMatrix.get(1,2), htMatrix.get(2,2));
-        double cosX = cos(x); double sinX = sin(x);
-        double cosY = sqrt(1-htMatrix.get(0,2));
-        double y = atan2(htMatrix.get(0,2), cosY);
-        double sinZ = cosX*htMatrix.get(1,0) + sinX*htMatrix.get(2,0);
-        double cosZ = cosX*htMatrix.get(1,1) + sinX*htMatrix.get(2,1);
-        double z = atan2(cosZ, sinZ);
+        // https://learnopencv.com/rotation-matrix-to-euler-angles/
+        double sy = sqrt(htMatrix.get(0,0) * htMatrix.get(0,0)
+                +  htMatrix.get(1,0) * htMatrix.get(1,0));
+        
+        boolean singular = sy < 1e-6;
+        double x,y,z;
+        
+        if(singular) {
+            x = atan2(htMatrix.get(2, 1), htMatrix.get(2, 2));
+            y = atan2(-htMatrix.get(2, 0), sy);
+            z = atan2(htMatrix.get(1, 0), htMatrix.get(0, 0));
+        } else {
+            x = atan2(-htMatrix.get(1, 2), htMatrix.get(1, 1));
+            y = atan2(-htMatrix.get(2, 0), sy);
+            z = 0;
+        }
         return Vector3D.of(x,y,z);
     }
 

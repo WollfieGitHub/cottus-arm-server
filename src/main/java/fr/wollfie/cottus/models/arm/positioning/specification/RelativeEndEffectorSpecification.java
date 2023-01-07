@@ -81,13 +81,12 @@ public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
     public AbsoluteEndEffectorSpecification toAbsolute(CottusArm arm) {
         AbsoluteEndEffectorSpecification root = this.root;
         if (root == null) { root = arm.getEndEffectorSpecification(); }
-        AbsoluteEndEffectorSpecification result = new AbsoluteEndEffectorSpecification(
+
+        return new AbsoluteEndEffectorSpecification(
                 root.getEndEffectorPosition().plus( this.getEndEffectorPosition() ),
                 root.getEndEffectorOrientation().plus( this.getEndEffectorOrientation() ),
                 root.getPreferredArmAngle() + this.getPreferredArmAngle()
         );
-        
-        return result;
     }
 
     @Override
