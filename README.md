@@ -1,3 +1,5 @@
+![](https://dcbadge.vercel.app/api/shield/225302262254141441?bot=false)
+
 # server Project
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
