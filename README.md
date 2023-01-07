@@ -1,4 +1,4 @@
-![](https://dcbadge.vercel.app/api/shield/225302262254141441?bot=false)
+![](https://dcbadge.vercel.app/api/shield/225302262254141441)
 
 # server Project
 
