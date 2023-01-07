@@ -11,6 +11,7 @@ import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.quarkus.logging.Log;
 
+import javax.xml.crypto.dsig.keyinfo.PGPData;
 import java.util.List;
 
 /**
@@ -46,8 +47,7 @@ public interface CottusArm {
      * can be set using I.K.*/
     @JsonIgnore
     default Joint getEndEffector() { 
-        List<Joint> joints = joints();
-        return joints.get(joints.size()-1);
+        return joints().get(joints().size()-1);
     }
 
     /**
@@ -125,7 +125,8 @@ public interface CottusArm {
      */
     @JsonGetter("endEffectorOrientation")
     default Rotation getEndEffectorOrientation() {
-        return Rotation.from(MatrixUtil.extractRotation(this.dhTable().getRotationMatrix(0, this.getNbOfJoints()-1)));
+        return Rotation.Identity;
+        // return Rotation.from(MatrixUtil.extractRotation(this.dhTable().getRotationMatrix(0, this.getNbOfJoints()-1)));
     }
 
     /** @return The current arm angle. It is the angle formed between the plane_0 and plane_phi where 
@@ -144,13 +145,19 @@ public interface CottusArm {
         Vector3D plane0Normal = shoulder.minus(base).cross( wrist.minus(base) );
         Vector3D planePhiNormal = elbow.minus(base).cross( wrist.minus(base) );
 
-        if (plane0Normal.isNan() || planePhiNormal.isNan()) { return Double.NaN; }
+        if (true) { return 0; }
+        
+        if (plane0Normal.isNan() || planePhiNormal.isNan()) {
+            return Double.NaN;
+        }
+        else if (plane0Normal.isZero() || planePhiNormal.isZero()) { return 0; }
         
         return plane0Normal.angleTo(planePhiNormal);
     }
 
     /** @return The specification of the arm based on the end effector's position, 
      * orientation and the arm's angle */
+    @JsonIgnore
     default AbsoluteEndEffectorSpecification getEndEffectorSpecification() {
         return new AbsoluteEndEffectorSpecification(
                 this.getEndEffectorPosition(),

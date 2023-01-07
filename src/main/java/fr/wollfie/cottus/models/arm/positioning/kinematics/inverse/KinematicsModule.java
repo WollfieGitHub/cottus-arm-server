@@ -6,6 +6,7 @@ import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.Analytical7DOFsIK;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.EvolutionaryIK;
+import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.IKFuture;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.SimpleJacobianIK;
 import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;
@@ -13,11 +14,14 @@ import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
+import io.quarkus.logging.Log;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 @ApplicationScoped
 public class KinematicsModule {
@@ -31,6 +35,7 @@ public class KinematicsModule {
     public KinematicsModule() {  }
     
     private static final IKAlgorithm IK_ALGORITHM = IKAlgorithm.ANALYTICAL_IK;
+    private static IKFuture currentIKSolve;
     
     /**
      * Provided with the angles of the joints of the arm, returns the position and rotation of 
@@ -64,8 +69,10 @@ public class KinematicsModule {
         // Otherwise the specification is absolute
         } else { absoluteEndEffectorSpecification = (AbsoluteEndEffectorSpecification) endEffectorSpecification; }
         
+        if (currentIKSolve != null && !currentIKSolve.isDone()) { currentIKSolve.cancel(true); }
+        
         // Need this weird stuff because of lambda's difficulty to deal with checked expression
-        IKFuture ikFuture = new IKFuture();
+        currentIKSolve = new IKFuture();
         CompletableFuture.runAsync(() -> {
             IKSolver solver = switch (IK_ALGORITHM) {
                 case PARALLEL_EVOLUTIONARY_IK -> new EvolutionaryIK();
@@ -74,11 +81,12 @@ public class KinematicsModule {
                 case ANALYTICAL_IK -> new Analytical7DOFsIK();
             };
             // Then start solving ik
-            try { ikFuture.complete(
-                solver.startIKSolve(arm, absoluteEndEffectorSpecification, 10.0, Math.toRadians(5))
-            ); } catch (NoSolutionException e) { ikFuture.completeExceptionally(e); }
+            try { 
+                List<Double> solution = solver.startIKSolve(arm, absoluteEndEffectorSpecification, 10.0, Math.toRadians(5));
+                currentIKSolve.complete(solution);
+            } catch (NoSolutionException e) { currentIKSolve.completeExceptionally(e);  }
         });
-        return ikFuture;
+        return currentIKSolve;
     }
     
 }

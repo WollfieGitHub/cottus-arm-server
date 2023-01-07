@@ -7,6 +7,8 @@ import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import org.ejml.simple.SimpleMatrix;
 
+import java.util.Arrays;
+
 import static java.lang.Math.*;
 
 /** Implementation of a
@@ -33,15 +35,21 @@ public class DHTable {
      * so that the arm can be modeled by DH parameters */
     @JsonIgnore
     private final boolean[] virtual;
+    /** name : The name of each joint */
+    private final String[] names;
     
     private final int size;
     
-    private DHTable(double[] d, double[] a, double[] theta0, double[] alpha, boolean[] virtual, double[] currTheta) {
+    private DHTable(
+            double[] d, double[] a, double[] theta0, double[] alpha,
+            boolean[] virtual, String[] names, double[] currTheta
+    ) {
         this.size = d.length;
         Preconditions.checkArgument(a.length == size);
         Preconditions.checkArgument(theta0.length == size);
         Preconditions.checkArgument(alpha.length == size);
         Preconditions.checkArgument(virtual.length == size);
+        Preconditions.checkArgument(names.length == size);
         Preconditions.checkArgument(currTheta.length == size);
         
         this.d = d;
@@ -49,12 +57,16 @@ public class DHTable {
         this.theta0 = theta0;
         this.alpha = alpha;
         this.virtual = virtual;
+        this.names = names;
         this.currTheta = currTheta;
     }
 
     /** Constructor for a new Denavit-Hartenberg Parameters Table */
-    public DHTable(double[] d, double[] a, double[] theta0, double[] alpha, boolean[] virtual) {
-        this(d, a, theta0, alpha, virtual, new double[d.length]);
+    public DHTable(
+            double[] d, double[] a, double[] theta0, double[] alpha,
+            boolean[] virtual, String[] names
+    ) {
+        this(d, a, theta0, alpha, virtual, names, new double[d.length]);
     }
 
     /** @return The size of the DH Table, i.e., the number of articulations */
@@ -67,6 +79,7 @@ public class DHTable {
     public double getVarTheta(int i) { return this.currTheta[i]; }
     public double getAlpha(int i) { return this.alpha[i]; }
     public boolean isVirtual(int i) { return this.virtual[i]; }
+    public String getName(int i) { return this.names[i]; }
 
     /** Because all are revolute join, only theta is able to vary */
     public void setVarTheta(int i, double value) { this.currTheta[i] = value; }
@@ -139,6 +152,25 @@ public class DHTable {
 
     /** Returns a copy of the DH Table */
     public DHTable copy() {
-        return new DHTable(d, a, theta0, alpha, virtual, currTheta);
+        return new DHTable(
+                Arrays.copyOf(d, d.length),
+                Arrays.copyOf(a, a.length),
+                Arrays.copyOf(theta0, theta0.length), 
+                Arrays.copyOf(alpha, alpha.length),
+                Arrays.copyOf(virtual, virtual.length),
+                Arrays.copyOf(names, currTheta.length),
+                Arrays.copyOf(currTheta, currTheta.length)
+        );
+    }
+
+    @Override
+    public String toString() {
+        return "DHTable{" + "\n" + Arrays.stream(d).mapToObj(v -> String.format("%5.3f", v)).toList() +
+                "\n" + Arrays.stream(theta0).mapToObj(v -> String.format("%5.3f", v)).toList() +
+                "\n" + Arrays.stream(currTheta).mapToObj(v -> String.format("%5.3f", v)).toList() +
+                "\n" + Arrays.stream(a).mapToObj(v -> String.format("%5.3f", v)).toList() +
+                "\n" + Arrays.stream(alpha).mapToObj(v -> String.format("%5.3f", v)).toList() +
+                "\n" + Arrays.toString(virtual) +
+                '}';
     }
 }

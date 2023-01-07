@@ -37,7 +37,7 @@ public interface ArmSpecification {
                 double angle = angles.get(i);
 
                 if (b.isOutOfBounds(angle)) {
-                    Log.errorf("Joint %d : %5.2fpi is out of bounds for %s", i, angle/Math.PI, b);
+                    Log.warnf("Joint %d : %5.2fpi is out of bounds for %s", i, angle/Math.PI, b);
                     return false;
                 }
             }

@@ -8,6 +8,9 @@ import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.mutiny.tuples.Tuple3;
 
+/**
+ * An animation that animates the end effector's position and orientation
+ */
 public abstract class EndEffectorAnimation implements ArmAnimation {
 
     private AbsoluteEndEffectorSpecification firstFrame = null;

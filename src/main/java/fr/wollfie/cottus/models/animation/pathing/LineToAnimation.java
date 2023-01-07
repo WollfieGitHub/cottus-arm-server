@@ -6,6 +6,11 @@ import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.mutiny.tuples.Tuple3;
 
+/**
+ * An animation that animates linearly from the position (0, 0, 0) (most likely relative
+ * to the current position of the end effector as this position is not feasible in absolute mode) 
+ * to the specified end position in the given amount of seconds.
+ */
 public final class LineToAnimation extends EndEffectorAnimation {
     
     private final Vector3D position;

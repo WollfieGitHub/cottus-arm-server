@@ -26,7 +26,8 @@ public class SimpleArmManipulator implements ArmManipulatorService {
     /*A_i */    new double[] {     0,       0,      0,      0,      0,      0,      0,     0},
     /*THETA_i */new double[] {     0,       0,      0,      0,      0,      0,      0,     0},
     /*ALPHA_i */new double[] {-PI/2.0, PI/2.0,-PI/2.0, PI/2.0,-PI/2.0, PI/2.0,      0,     0},
-                new boolean[]{  false,  false,  false,  false,  false,  false,  false,  true}
+                new boolean[]{  false,  false,  false,  false,  false,  false,  false,  true},
+                new String[] {"Shoulder_0", "Shoulder_1", "Shoulder_2", "Elbow", "Wrist_0", "Wrist_1", "Wrist_2"}
     );
 
     private static final JointBounds[] JOINT_BOUNDS_1 = new JointBounds[] {
@@ -49,8 +50,7 @@ public class SimpleArmManipulator implements ArmManipulatorService {
 // ||                                                                                      ||
 // \\======================================================================================//
 
-    @Inject
-    ArmLoaderService armLoaderService;
+    @Inject ArmLoaderService armLoaderService;
 
     @PostConstruct
     void initArm() {

@@ -2,7 +2,6 @@ package fr.wollfie.cottus.utils.maths;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.utils.Preconditions;
-import fr.wollfie.cottus.utils.Utils;
 import org.ejml.simple.SimpleMatrix;
 
 import static fr.wollfie.cottus.utils.maths.Axis3D.*;
@@ -35,9 +34,9 @@ public class Vector3D extends Vector {
     /** @return True if the vector is zero, false otherwise */
     @Override
     public boolean isZero() {
-        return Utils.isZero(x)
-                && Utils.isZero(y)
-                && Utils.isZero(z);
+        return MathUtils.isZero(x)
+                && MathUtils.isZero(y)
+                && MathUtils.isZero(z);
     }
     
     /**

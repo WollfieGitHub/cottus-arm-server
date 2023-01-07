@@ -32,7 +32,7 @@ public class MatrixUtil {
     public static Vector3D multHt(SimpleMatrix htMatrix, Vector3D other) {
         Vector vector = new Vector(other.x, other.y, other.z, 1);
         Vector res = mult(htMatrix, vector);
-        return Vector3D.of(res.get(0)/res.get(3), res.get(1)/res.get(3), res.get(2)/res.get(3));
+        return Vector3D.of(res.get(0), res.get(1), res.get(2));
     }
 
     /**

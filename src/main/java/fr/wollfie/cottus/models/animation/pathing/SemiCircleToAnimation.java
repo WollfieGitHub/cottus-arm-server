@@ -7,22 +7,44 @@ import io.smallrye.mutiny.tuples.Tuple3;
 
 import static java.lang.Math.*;
 
+/**
+ * Creates an animation that animates the end effector in a semi circle, of the specified 
+ * angle in total, which center is situated somewhere in the middle of the (relative or absolute) 
+ * origin and the desired end position.
+ */
 public class SemiCircleToAnimation extends EndEffectorAnimation {
 
+    /** Radius of the circle */
     private final double radius;
+    /** Total angle of the circle */
     private final double angleRad;
     
+    /** The center point of the circle */
     private final Vector3D centerPoint;
     private final Vector3D u;
     private final Vector3D v;
     
     private final double timeSec;
-    
+
+    /**
+     * <p>
+     *     Creates an animation that animates the end effector in a semicircle, of the specified 
+     *     angle in total, which center is situated somewhere in the middle of the (relative or absolute) 
+     *     origin and the desired end position. The {@param circleDirection} parameters is the height
+     *     isosceles triangle which goes through the summit which is the center of the circle
+     * </p>
+     * <img src="../../../../../../../resources/documentation/SemiCircleToAnimationIllustration.png" width=600 height=600>
+     * @param relative Whether the animation should be relative to the current position of the end effector
+     * @param endPosition The position of the end effector at the end of the animation
+     * @param timeSec The total duration of the animation
+     * @param angleDeg The angle in degrees of the semicircle
+     * @param circleDirection The direction of circle
+     */
     public SemiCircleToAnimation(boolean relative, Vector3D endPosition, double timeSec, 
                                  double angleDeg, Vector3D circleDirection) {
         super(relative);
         Preconditions.checkArgument(!circleDirection.isZero());
-        // The {circleDirection} vector is the height of the isosceles triangle which's 
+        // The {circleDirection} vector is the height of the isosceles triangle which
         // goes through the summit which is the center of the circle. This isosceles triangle has
         // its sides of equal lengths equal to the radius of the circle
         // This triangle's third side is the chord length of the remaining arc

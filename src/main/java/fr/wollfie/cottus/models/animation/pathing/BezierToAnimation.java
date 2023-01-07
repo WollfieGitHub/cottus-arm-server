@@ -1,29 +1,40 @@
 package fr.wollfie.cottus.models.animation.pathing;
 
+import fr.wollfie.cottus.utils.maths.MathUtils;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.mutiny.tuples.Tuple3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
-import static fr.wollfie.cottus.utils.Utils.binomial;
+import static fr.wollfie.cottus.utils.maths.MathUtils.binomial;
 import static java.lang.Math.pow;
 
+/**
+ * An animation following a Bézier curve with specified start position, end position
+ * and anchor points
+ */
 public class BezierToAnimation extends EndEffectorAnimation {
 
+    /** The duration of the animation in seconds */
     private final double timeSec;
-    private final List<Vector3D> anchorPoints;
+    /** The curve, parametrized from 0 to 1 (start to finish) */
+    private final Function<Double, Vector3D> bezierCurve;
 
     public BezierToAnimation(boolean relative, Vector3D endPosition, double timeSec, Vector3D... anchorPoints) {
         super(relative);
         this.timeSec = timeSec;
-        this.anchorPoints = new ArrayList<>();
-
+        
         // First and last coefficient of the curve is end and begin points
-        this.anchorPoints.add(Vector3D.Zero);
-        this.anchorPoints.addAll(List.of(anchorPoints));
-        this.anchorPoints.add(endPosition);
+        List<Vector3D> points = new ArrayList<>();
+        points.add(Vector3D.Zero);
+        points.addAll(List.of(anchorPoints));
+        points.add(endPosition);
+        
+        // Compute the "equation" of the curve
+        this.bezierCurve = MathUtils.bezierCurve(points);
     }
 
     @Override
@@ -34,20 +45,12 @@ public class BezierToAnimation extends EndEffectorAnimation {
     /**
      * @param secFromStart Seconds from start of the animation
      * @return The specification for the end effector
-     * @implNote <a href="https://mathcurve.com/courbes3d.gb/bezier3d/bezier3d.shtml">Source</a>
      */
     @Override
     protected Tuple3<Vector3D, Rotation, Double> relativeEvaluateAt(double secFromStart) {
 
         double t = secFromStart / timeSec;
-        int n = anchorPoints.size();
-        Vector3D result = Vector3D.Zero;
 
-        for (int k = 0; k < n; k++) {
-            double bernsteinCoefficient = binomial(k, n) * pow(t, k) * pow(1 - t, n - k);
-            result = result.plus(anchorPoints.get(k).scaled(bernsteinCoefficient));
-        }
-
-        return Tuple3.of(result, Rotation.Identity, 0.0);
+        return Tuple3.of( this.bezierCurve.apply(t), Rotation.Identity, 0.0 );
     }
 }

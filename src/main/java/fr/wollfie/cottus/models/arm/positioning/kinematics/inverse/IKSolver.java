@@ -45,12 +45,11 @@ public interface IKSolver {
      * @param table The DH Table
      * @param xT The current position of the end effector
      * @param qT The current set of angles
-     * @param kinematics The kinematics module used for forward kinematics
      * @return The Jacobian Matrix
      */
     static SimpleMatrix computeJacobianWithDiff(
             int n, double delta,
-            DHTable table, KinematicsModule kinematics,
+            DHTable table,
             Vector xT, Vector qT
     ) {
         // https://robotics.stackexchange.com/questions/16759/jacobian-of-a-6dof-arm
@@ -60,7 +59,7 @@ public interface IKSolver {
             if (table.isVirtual(c)) { diff = Vector.Zero(n); }
             else { diff = Vector.unit(c, n).scaled(delta); }
 
-            cols[c] = xT.minus(kinematics.forward(table, qT.plus(diff))).scaled(1/delta);
+            cols[c] = xT.minus(KinematicsModule.forward(table, qT.plus(diff))).scaled(1/delta);
         }
 
         return MatrixUtil.from(cols);

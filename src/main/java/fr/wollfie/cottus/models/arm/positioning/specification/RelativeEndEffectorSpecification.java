@@ -4,6 +4,7 @@ import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.specification.EndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
+import io.quarkus.logging.Log;
 
 import java.util.List;
 
@@ -80,11 +81,17 @@ public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
     public AbsoluteEndEffectorSpecification toAbsolute(CottusArm arm) {
         AbsoluteEndEffectorSpecification root = this.root;
         if (root == null) { root = arm.getEndEffectorSpecification(); }
-        
-        return new AbsoluteEndEffectorSpecification(
-                root.getEndEffectorPosition().plus(this.getEndEffectorPosition()),
-                root.getEndEffectorOrientation().plus(this.getEndEffectorOrientation()),
+        AbsoluteEndEffectorSpecification result = new AbsoluteEndEffectorSpecification(
+                root.getEndEffectorPosition().plus( this.getEndEffectorPosition() ),
+                root.getEndEffectorOrientation().plus( this.getEndEffectorOrientation() ),
                 root.getPreferredArmAngle() + this.getPreferredArmAngle()
         );
+        
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }

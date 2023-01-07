@@ -6,6 +6,7 @@ import fr.wollfie.cottus.dto.JointBounds;
 import fr.wollfie.cottus.dto.JointTransform;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.dto.Joint;
+import io.quarkus.logging.Log;
 import io.smallrye.common.constraint.Nullable;
 
 public class JointImpl implements Joint {
@@ -49,7 +50,7 @@ public class JointImpl implements Joint {
     @Override
     public void setAngleRad(double angleRad) throws AngleOutOfBoundsException {
         if (bounds.isOutOfBounds(angleRad)) { throw new AngleOutOfBoundsException(); }
-
+        
         this.transform.setAngle(angleRad);
     }
     
@@ -74,5 +75,5 @@ public class JointImpl implements Joint {
         this.virtual = virtual;
         this.transform = transform;
     }
-    
+
 }

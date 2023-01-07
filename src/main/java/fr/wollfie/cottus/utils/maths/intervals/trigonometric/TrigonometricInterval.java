@@ -1,8 +1,7 @@
 package fr.wollfie.cottus.utils.maths.intervals.trigonometric;
 
-import fr.wollfie.cottus.utils.Utils;
+import fr.wollfie.cottus.utils.maths.MathUtils;
 import fr.wollfie.cottus.utils.maths.intervals.ContinuousInterval;
-import io.quarkus.logging.Log;
 
 import static java.lang.Math.*;
 
@@ -19,8 +18,8 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
         this.upperBound = upperBound;
     }
 
-    @Override public boolean contains(double v) { return containsNormalized(Utils.normalizeAngle(v)); }
-    @Override public double clamped(double v) { return clampedNormalized(Utils.normalizeAngle(v)); }
+    @Override public boolean contains(double v) { return containsNormalized(MathUtils.normalizeAngle(v)); }
+    @Override public double clamped(double v) { return clampedNormalized(MathUtils.normalizeAngle(v)); }
 
     protected abstract boolean containsNormalized(double normalizeAngle);
     protected abstract double clampedNormalized(double normalizeAngle);
@@ -32,8 +31,8 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
      * @return A new trigonometric interval
      */
     public static TrigonometricInterval with(double lowerBoundRad, double upperBoundRad) {
-        double l2 = Utils.normalizeAngle(lowerBoundRad);
-        double u2 = Utils.normalizeAngle(upperBoundRad);
+        double l2 = MathUtils.normalizeAngle(lowerBoundRad);
+        double u2 = MathUtils.normalizeAngle(upperBoundRad);
 
         if (l2 <= u2) { return new Inner(l2, u2); }
         else { return new Outer(l2, u2); }

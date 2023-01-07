@@ -22,10 +22,8 @@ public class Core {
     private static final long UPDATE_DELAY = 33;
     private ScheduledExecutorService timer;
     
-    @Inject
-    ArmManualControllerService armManualControllerService;
-    @Inject
-    ArmAnimatorControllerService armAnimatorControllerService;
+    @Inject ArmManualControllerService armManualControllerService;
+    @Inject ArmAnimatorControllerService armAnimatorControllerService;
     @Inject ArmStateSocket armStateSocket;
     
 // //======================================================================================\\

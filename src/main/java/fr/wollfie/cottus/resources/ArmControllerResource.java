@@ -7,6 +7,7 @@ import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffecto
 import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;
 import fr.wollfie.cottus.services.ArmManipulatorService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
+import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
 
 import javax.inject.Inject;

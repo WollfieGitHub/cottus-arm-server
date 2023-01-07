@@ -2,8 +2,6 @@ package fr.wollfie.cottus.utils.maths;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.wollfie.cottus.utils.Preconditions;
-import fr.wollfie.cottus.utils.Utils;
-import org.ejml.data.Matrix;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.Arrays;
@@ -136,7 +134,7 @@ public class Vector {
     /** @return True if the vector is Zero, false otherwise */
     public boolean isZero() {
         for (double value : values) {
-            if (!Utils.isZero(value)) { return false; }
+            if (!MathUtils.isZero(value)) { return false; }
         }
         return true;
     }
@@ -144,9 +142,9 @@ public class Vector {
     /** @return True if the vector has any coordinate that is {@link Double#NaN}, false otherwise */
     public boolean isNan() {
         for (double value : values) {
-            if (Double.isNaN(value)) { return false; }
+            if (Double.isNaN(value)) { return true; }
         }
-        return true;
+        return false;
     }
 
     /**

@@ -43,8 +43,14 @@ public class ArmManualController implements ArmManualControllerService {
     public void moveTo(EndEffectorSpecification endEffectorSpecification) {
         if (!this.active) { return; }
 
+        // TODO RETHINK THIS UGLY PIECE OF CODE-
         KinematicsModule.inverseSolve(armManipulatorService.getArmState(), endEffectorSpecification)
-            .thenAccept(angles -> {
+            .exceptionally(e -> {
+                if (e instanceof NoSolutionException) { Log.error("No solution found !"); }
+                else { throw new RuntimeException(e); }
+                return null;
+            }).thenAccept(angles -> {
+                if (angles == null) { return; }
                 // If a solution is found, the following code executes, otherwise it does not
                 AngleSpecification specification = new AngleSpecification(angles);
                 // Update the arm with the angles
@@ -53,11 +59,6 @@ public class ArmManualController implements ArmManualControllerService {
                 // Shouldn't happen since the IKSolver should clamp the angles to give only valid angles
                 // or throw a NoSolutionException otherwise
                 } catch (AngleOutOfBoundsException e) { throw new IllegalStateException(e); }
-
-            }).exceptionally(e -> {
-                if (e instanceof NoSolutionException) { Log.error("No solution found !"); }
-                else { throw new RuntimeException(e); }
-                return null;
             });
     }
 

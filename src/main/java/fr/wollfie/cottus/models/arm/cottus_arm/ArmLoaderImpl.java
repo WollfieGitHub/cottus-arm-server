@@ -24,7 +24,7 @@ public class ArmLoaderImpl implements ArmLoaderService {
         for (int i = 0; i < dhTable.size(); i++) {
             // Create the new articulation
             joints.add(new JointImpl(
-                    String.format("Articulation %d", i),
+                    dhTable.getName(i),
                     i == 0 ? null : joints.get(i - 1), bounds[i],
                     new DHBasedJointTransform(dhTable, i),
                     dhTable.isVirtual(i)

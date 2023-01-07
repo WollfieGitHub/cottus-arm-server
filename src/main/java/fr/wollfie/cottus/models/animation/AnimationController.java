@@ -5,6 +5,9 @@ import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
 
 import javax.enterprise.context.ApplicationScoped;
 
+/**
+ * Handles the animation of the arm when it is active
+ */
 @ApplicationScoped
 public class AnimationController implements ArmAnimatorControllerService {
     
