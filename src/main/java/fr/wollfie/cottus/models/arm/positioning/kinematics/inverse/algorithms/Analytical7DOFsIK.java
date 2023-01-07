@@ -384,7 +384,7 @@ public class Analytical7DOFsIK implements IKSolver {
             Interval regionLo = ContinuousInterval.from(psiLo[0], psiLo[0]);
             Interval regionHi = ContinuousInterval.from(psiHi[0], psiHi[0]);;
             // 1. No feasible regions of the arm angle exist.
-            if (tMin > tHi || tMax < tLo) { return Interval.EMPTY; }
+            if (tMin > tHi || tMax < tLo) { return ContinuousInterval.EMPTY; }
             // 2. Solve equation t(psi) = tLo
             if (tMin < tLo && tMax <= tHi) { return regionLo; }
             // 3. Solve equation t(psi) = tHi

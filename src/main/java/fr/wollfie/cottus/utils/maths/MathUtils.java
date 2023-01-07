@@ -58,4 +58,10 @@ public class MathUtils {
             return result;
         };
     }
+    
+    /** @return The value clamped between min and max */
+    public static double clamped(double min, double max, double v) {
+        if (v < min) { return min; }
+        return Math.min(v, max);
+    }
 }

@@ -1,34 +1,38 @@
 package fr.wollfie.cottus.models.arm.positioning.joints.bounds;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.dto.JointBounds;
-import fr.wollfie.cottus.utils.maths.intervals.Interval;
+import fr.wollfie.cottus.utils.maths.MathUtils;
+import fr.wollfie.cottus.utils.maths.intervals.ContinuousInterval;
+
+import static java.lang.Math.*;
 
 /** Joint's bounds based around an interval object  */
 public class IntervalJointBounds implements JointBounds {
     
     /** These bounds do not allow any rotation for the joint */
-    public static IntervalJointBounds EMPTY = IntervalJointBounds.of(Interval.EMPTY);
+    public static IntervalJointBounds EMPTY = IntervalJointBounds.of(null);
     /** Any angle is allowed by this type of bounds */
-    public static IntervalJointBounds ANY = IntervalJointBounds.of(Interval.REAL);
+    public static IntervalJointBounds ANY = IntervalJointBounds.of(ContinuousInterval.REAL);
     
-    @JsonIgnore private final Interval interval;
-    private IntervalJointBounds(Interval interval) { this.interval = interval; }
+    @JsonIgnore private final ContinuousInterval interval;
+    private IntervalJointBounds(ContinuousInterval interval) { this.interval = interval; }
 
-    public static IntervalJointBounds of(Interval interval) { return new IntervalJointBounds(interval); }
+    public static IntervalJointBounds of(ContinuousInterval interval) { return new IntervalJointBounds(interval); }
     
     // TODO EDIT BACK
-    @Override public boolean isOutOfBounds(double v) { return false; /*return !this.interval.contains(v);*/ }
+    @Override public boolean isOutOfBounds(double v) { return false; /*return this.interval == null ? true : !this.interval.contains(v);*/ }
     @Override public double clamped(double v) {
-        double result = this.interval.clamped(v);
+        if (this.interval == null) { return Double.NaN; }
+        
+        double result = MathUtils.clamped(this.interval.lowerBound, this.interval.upperBound, v);
         return Double.isNaN(result) ? v : result;
     }
 
     @Override
-    public double getLowerBound() { return this.interval.clamped(-Math.PI); }
+    public double getLowerBound() { return this.clamped(-PI); }
     @Override
-    public double getUpperBound() { return this.interval.clamped(Math.PI); }
+    public double getUpperBound() { return this.clamped(PI); }
 
     @Override
     public String toString() {
