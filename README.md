@@ -1,4 +1,4 @@
-![](https://dcbadge.vercel.app/api/shield/225302262254141441?style=flat&theme=clean&compact=true)
+![](https://dcbadge.vercel.app/api/shield/225302262254141441?style=flat&theme=discord-inverted&compact=true)
 
 # server Project
 
