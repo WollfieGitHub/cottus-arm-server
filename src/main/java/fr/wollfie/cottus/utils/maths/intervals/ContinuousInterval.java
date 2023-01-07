@@ -2,9 +2,6 @@ package fr.wollfie.cottus.utils.maths.intervals;
 
 import fr.wollfie.cottus.utils.Preconditions;
 
-import static java.lang.Math.*;
-import static java.lang.Math.abs;
-
 /** A continuous interval */
 public class ContinuousInterval implements Interval {
 
@@ -12,7 +9,7 @@ public class ContinuousInterval implements Interval {
     public final double upperBound;
     
     /** The interval of all real numbers */
-    public static ContinuousInterval REAL = new ContinuousInterval(-Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY) {
+    public static ContinuousInterval REAL = new ContinuousInterval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY) {
         @Override public boolean contains(double v) { return true; }
     };
 
@@ -33,8 +30,12 @@ public class ContinuousInterval implements Interval {
         return new ContinuousInterval(lowerBound, upperBound);
     }
 
+    
     @Override
     public boolean contains(double v) {
         return lowerBound <= v && v <= upperBound;
     }
+
+    @Override
+    public String toString() { return String.format("[%5.3f, %5.3f]", lowerBound, upperBound); }
 }

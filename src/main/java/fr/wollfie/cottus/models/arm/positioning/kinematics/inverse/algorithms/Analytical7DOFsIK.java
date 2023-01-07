@@ -14,6 +14,7 @@ import fr.wollfie.cottus.utils.maths.intervals.ContinuousInterval;
 import fr.wollfie.cottus.utils.maths.intervals.Interval;
 import fr.wollfie.cottus.utils.maths.intervals.trigonometric.TrigonometricInterval;
 import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
+import io.quarkus.logging.Log;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.HashMap;
@@ -43,6 +44,9 @@ public class Analytical7DOFsIK implements IKSolver {
     
     private double theta1_0, theta2_0;
     private double theta1, theta2, theta3, theta4, theta5, theta6, theta7;
+    private SimpleMatrix rD;
+    private SimpleMatrix R03_0D;
+    private SimpleMatrix R34;
 
 //=========   ====  == =
 //      JOINT ANALYTIC INFO
@@ -77,14 +81,9 @@ public class Analytical7DOFsIK implements IKSolver {
         table = arm.dhTable().copy();
         table.setThetas( Vector.Zero(table.size()) );
         
-        // Compute cos and sin of arm angle
-        this.psi = specification.getPreferredArmAngle();
-        this.cPsi = cos(psi);
-        this.sPsi = sin(psi);
-        
         // Rotate the Z axis around the Y axis so that default rotation is end effector pointing
         // towards X axis
-        SimpleMatrix rD = MatrixUtil.rotationFrom(specification.getEndEffectorOrientation());
+        rD = MatrixUtil.rotationFrom(specification.getEndEffectorOrientation());
         // Set vectors for reference frame
         // From base to shoulder
         lBs = MatrixUtil.multHt(table.getTransformMatrix(0, 1), Vector3D.Zero);
@@ -124,16 +123,83 @@ public class Analytical7DOFsIK implements IKSolver {
         table.setVarTheta(1, theta2_0);
         
         // Given that theta3_0 = 0
-        R03_0 = table.getRotationMatrix(0, 2);
+        R03_0D = table.getRotationMatrix(0, 2);
+        R03_0 = R03_0D;
         
+        // Compute all remaining angles (1, 2, 3, 5, 6, 7)
+        this.computeRemainingAngleGiven(specification.getPreferredArmAngle());
+        
+        List<JointBounds> bounds = arm.joints().stream().map(Joint::getBounds).toList();
+
+        Vector solution = new Vector(theta1, theta2, theta3, theta4, theta5, theta6, theta7);
+        Vector clampedSolution = IKSolver.getBoundedAngles(
+                solution, bounds
+        );
+        // TODO ONLY VALID ANGLES
+        List<Double> angles = solution.toList();
+        
+        try {
+            Interval feasibleArmAngles = getFeasibleAngles(bounds);
+        } catch (Exception e) { e.printStackTrace(); }
+        
+        if (angles.stream().anyMatch(a -> a.isNaN())) { throw new NoSolutionException(); } 
+        else { return angles; }
+    }
+    
+    private void computeRemainingAngleGiven(double psi) {
+        
+        // Compute cos and sin of arm angle
+        this.psi = psi;
+        this.cPsi = cos(psi);
+        this.sPsi = sin(psi);
+
 //=========   ====  == =
 //      COMPUTE SHOULDER ANGLES
 //=========   ====  == =
+
+        aS = uSwX.mult(R03_0);
+        bS = uSwX.mult(uSwX).scale(-1).mult(R03_0);
+        cS = uSwT.mult(R03_0);
+
+
+        SimpleMatrix matrix;
+        matrix = aS.scale(sin(psi)).plus(bS.scale(cos(psi))).plus(cS);
+        for (int i = 0; i < matrix.numRows(); i++) {
+            for (int j = 0; j < matrix.numCols(); j++) {
+                matrix.set(i, j, toDegrees(acos( matrix.get(i,j) )));
+            }
+        }
+        Log.info(matrix);
+        matrix = aS.scale(sin(psi)).plus(bS.scale(cos(psi))).plus(cS);
+        for (int i = 0; i < matrix.numRows(); i++) {
+            for (int j = 0; j < matrix.numCols(); j++) {
+                matrix.set(i, j, toDegrees(acos( -matrix.get(i,j) )));
+            }
+        }
+        Log.info(matrix);
+        Log.info("\n===================================================================================================");
+
+        R03_0 = table.getRotationMatrix(0, 3);
         
         aS = uSwX.mult(R03_0);
         bS = uSwX.mult(uSwX).scale(-1).mult(R03_0);
         cS = uSwT.mult(R03_0);
-        
+
+        matrix = aS.scale(sin(psi)).plus(bS.scale(cos(psi))).plus(cS);
+        for (int i = 0; i < matrix.numRows(); i++) {
+            for (int j = 0; j < matrix.numCols(); j++) {
+                matrix.set(i, j, toDegrees(acos( matrix.get(i,j) )));
+            }
+        }
+        Log.info(matrix);
+        matrix = aS.scale(sin(psi)).plus(bS.scale(cos(psi))).plus(cS);
+        for (int i = 0; i < matrix.numRows(); i++) {
+            for (int j = 0; j < matrix.numCols(); j++) {
+                matrix.set(i, j, toDegrees(acos( -matrix.get(i,j) )));
+            }
+        }
+        Log.info(matrix);
+
         theta1 = computeTheta(0, aS, bS, cS);
         theta2 = computeTheta(1, aS, bS, cS);
         theta3 = computeTheta(2, aS, bS, cS);
@@ -145,11 +211,13 @@ public class Analytical7DOFsIK implements IKSolver {
 //=========   ====  == =
 //      COMPUTE WRIST ANGLES
 //=========   ====  == =
-        
-        aW = table.getRotationMatrix(2,4).transpose().mult( aS.transpose() ).mult( rD );
-        bW = table.getRotationMatrix(2,4).transpose().mult( bS.transpose() ).mult( rD );
-        cW = table.getRotationMatrix(2,4).transpose().mult( cS.transpose() ).mult( rD );
 
+        R34 = table.getRotationMatrix(3,4);
+
+        aW = R34.transpose().mult( aS.transpose() ).mult( rD );
+        bW = R34.transpose().mult( bS.transpose() ).mult( rD );
+        cW = R34.transpose().mult( cS.transpose() ).mult( rD );
+        
         theta5 = computeTheta(4, aW, bW, cW);
         theta6 = computeTheta(5, aW, bW, cW);
         theta7 = computeTheta(6, aW, bW, cW);
@@ -157,20 +225,6 @@ public class Analytical7DOFsIK implements IKSolver {
         table.setVarTheta(4, theta5);
         table.setVarTheta(5, theta6);
         table.setVarTheta(6, theta7);
-        
-        List<JointBounds> bounds = arm.joints().stream().map(Joint::getBounds).toList();
-
-        Vector solution = new Vector(theta1, theta2, theta3, theta4, theta5, theta6, theta7);
-        Vector clampedSolution = IKSolver.getBoundedAngles(
-                solution, bounds
-        );
-        // TODO ONLY VALID ANGLES
-        List<Double> angles = solution.toList();
-        
-        Interval feasibleArmAngles = getFeasibleAngles(bounds);
-        
-        if (angles.stream().anyMatch(a -> a.isNaN())) { throw new NoSolutionException(); } 
-        else { return angles; }
     }
 
     /** @return The value of (a_ij * sinPsi + b_ij * cosPsi + c_ij */
@@ -218,14 +272,14 @@ public class Analytical7DOFsIK implements IKSolver {
     // Initialized on first reference to class
     static {
         // Shoulder
-        JOINT_ANALYTIC_INFO_MAP.put(0, new TangentJointInfo(1,2, 1, 0,2, 1));
-        JOINT_ANALYTIC_INFO_MAP.put(1, new CosineJointInfo(2,2, 1));
-        JOINT_ANALYTIC_INFO_MAP.put(2, new TangentJointInfo(2,1, 1, 2,0, -1));
+        JOINT_ANALYTIC_INFO_MAP.put(0, new TangentJointInfo(1,1, -1, 0,1, -1));
+        JOINT_ANALYTIC_INFO_MAP.put(1, new CosineJointInfo(2,1, -1));
+        JOINT_ANALYTIC_INFO_MAP.put(2, new TangentJointInfo(2,2, 1, 2,0, -1));
         
         // Wrist
-        JOINT_ANALYTIC_INFO_MAP.put(4, new TangentJointInfo(1,2, 1, 0,2, -1));
+        JOINT_ANALYTIC_INFO_MAP.put(4, new TangentJointInfo(1,2, 1, 0,2, 1));
         JOINT_ANALYTIC_INFO_MAP.put(5, new CosineJointInfo(2,2, 1));
-        JOINT_ANALYTIC_INFO_MAP.put(6, new TangentJointInfo(2,1, 1,2,0, -1));
+        JOINT_ANALYTIC_INFO_MAP.put(6, new TangentJointInfo(2,1, 2,2,0,-1));
     }
     
     private double computeTheta(int i, SimpleMatrix a, SimpleMatrix b, SimpleMatrix c) { 
@@ -250,7 +304,6 @@ public class Analytical7DOFsIK implements IKSolver {
 // ||                                                                                      ||
 // \\======================================================================================//
     
-    
 //=========   ====  == =
 //      COMPUTE ARM ANGLE DEPENDING ON JOINT TYPE
 //=========   ====  == =
@@ -273,17 +326,23 @@ public class Analytical7DOFsIK implements IKSolver {
     private double[] getPsiForTanTypeTheta(TanCoefficients t, double theta) {
         // TODO VERIFY THIS BIT
         // We only need to solve for the cos, but it must respect the sin
+        Log.infof(String.valueOf(t.a1*t.a1 + t.b1*t.b1 - (cos(theta)-t.c1)*(cos(theta)-t.c1)));
+        
         double k1 = cos(theta)-t.c1;
         double psi1 = this.solveBase(t.a1, t.a2, k1);
         
+        double sinT = (t.a1 * sin(psi1) + t.b1 * cos(psi1) + t.c1);
+        double costT = (t.a2 * sin(psi1) + t.b2 * cos(psi1) + t.c2);
+        
         if (MathUtils.isZero(abs(
-                tan(theta) - (t.a1 * sin(psi1) + t.b1 * cos(psi1) + t.c1) /
-                (t.a2 * sin(psi1) + t.b2 * cos(psi1) + t.c2)
+                tan(theta) - sinT/costT
         ))) {
             // Two solutions
             return new double[] { min(psi1, PI-psi1), max(psi1, PI-psi1) };
         // No solution : Theta is a singularity
-        } else { return new double[0]; }
+        } else { 
+            throw new IllegalStateException(String.format("tanT = %5.3f, sol = %5.3f, sin = %5.3f, cos = %5.3f", tan(theta), sinT/costT, sinT, costT));
+        }
     }
     
     /** @return Theta_i = f(psi) */
@@ -381,8 +440,8 @@ public class Analytical7DOFsIK implements IKSolver {
 
             // 5 CASES :
             Interval domain = ContinuousInterval.from(-PI, PI);
-            Interval regionLo = ContinuousInterval.from(psiLo[0], psiLo[0]);
-            Interval regionHi = ContinuousInterval.from(psiHi[0], psiHi[0]);;
+            Interval regionLo = ContinuousInterval.from(psiLo[0], psiLo[1]);
+            Interval regionHi = ContinuousInterval.from(psiHi[0], psiHi[1]);;
             // 1. No feasible regions of the arm angle exist.
             if (tMin > tHi || tMax < tLo) { return ContinuousInterval.EMPTY; }
             // 2. Solve equation t(psi) = tLo

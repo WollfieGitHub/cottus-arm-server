@@ -14,15 +14,14 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
     protected final double upperBound;
 
     private TrigonometricInterval(double lowerBound, double upperBound) {
+        super(lowerBound, upperBound);
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
 
     @Override public boolean contains(double v) { return containsNormalized(MathUtils.normalizeAngle(v)); }
-    @Override public double clamped(double v) { return clampedNormalized(MathUtils.normalizeAngle(v)); }
 
     protected abstract boolean containsNormalized(double normalizeAngle);
-    protected abstract double clampedNormalized(double normalizeAngle);
 
     /**
      * Creates a trigonometric interval from the specified lower and upper bounds
@@ -61,16 +60,6 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
             return -PI <= v && v <= upperBound
                     || lowerBound <= v && v <= PI; 
         }
-        
-        @Override public double clampedNormalized(double v) { 
-            if (this.containsNormalized(v)) { return v; }
-
-            double distanceToHi = v - upperBound;
-            double distanceToLo = lowerBound - v;
-            
-            if (distanceToLo < distanceToHi) { return lowerBound; }
-            else { return upperBound; }
-        }
 
         @Override
         public String toString() {
@@ -88,24 +77,6 @@ public abstract class TrigonometricInterval extends ContinuousInterval {
         @Override
         public boolean containsNormalized(double v) {
             return lowerBound <= v && v <= upperBound;
-        }
-
-        @Override
-        public double clampedNormalized(double v) {
-            if (this.containsNormalized(v)) { return v; }
-
-            double distanceToHi, distanceToLo;
-            
-            if (v <= lowerBound) {
-                distanceToHi = (v + 2 * PI) - upperBound;
-                distanceToLo = lowerBound - v;
-            } else {
-                distanceToLo = lowerBound - (v - 2 * PI);
-                distanceToHi = v - upperBound;
-            }
-            
-            if (distanceToLo < distanceToHi) { return lowerBound; } 
-            else { return upperBound; }
         }
 
         @Override

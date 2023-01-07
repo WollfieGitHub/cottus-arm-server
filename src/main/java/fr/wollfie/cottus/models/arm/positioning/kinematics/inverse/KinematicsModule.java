@@ -85,6 +85,7 @@ public class KinematicsModule {
                 List<Double> solution = solver.startIKSolve(arm, absoluteEndEffectorSpecification, 10.0, Math.toRadians(5));
                 currentIKSolve.complete(solution);
             } catch (NoSolutionException e) { currentIKSolve.completeExceptionally(e);  }
+            catch (Exception e2) { e2.printStackTrace(); }
         });
         return currentIKSolve;
     }

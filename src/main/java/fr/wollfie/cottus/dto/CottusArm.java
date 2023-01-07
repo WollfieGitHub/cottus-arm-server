@@ -125,8 +125,7 @@ public interface CottusArm {
      */
     @JsonGetter("endEffectorOrientation")
     default Rotation getEndEffectorOrientation() {
-        return Rotation.Identity;
-        // return Rotation.from(MatrixUtil.extractRotation(this.dhTable().getRotationMatrix(0, this.getNbOfJoints()-1)));
+        return Rotation.from(MatrixUtil.extractRotation(this.dhTable().getRotationMatrix(0, this.getNbOfJoints()-1)));
     }
 
     /** @return The current arm angle. It is the angle formed between the plane_0 and plane_phi where 
