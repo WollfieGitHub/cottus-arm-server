@@ -1,4 +1,7 @@
 quarkus:
+  mongodb:
+    connection-string: "mongodb://localhost:27017"
+    database: "animations"
   http:
     cors: true
   banner:
