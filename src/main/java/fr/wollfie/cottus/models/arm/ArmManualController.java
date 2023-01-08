@@ -16,7 +16,6 @@ import javax.inject.Inject;
 public class ArmManualController implements ArmManualControllerService {
 
     @Inject ArmManipulatorService armManipulatorService;
-    @Inject KinematicsModule kinematicsModule;
     
     private boolean active = false;
     @Override public void setActive(boolean active) { this.active = active; }

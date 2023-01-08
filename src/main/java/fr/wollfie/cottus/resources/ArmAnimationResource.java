@@ -24,6 +24,7 @@ public class ArmAnimationResource {
     @Inject AnimationRepository animationRepository;
     
     @GET
+    @Path("/preview")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<AnimationPreview> getPreviewFor(
             @QueryParam("animation_name") String animationName,
@@ -39,6 +40,7 @@ public class ArmAnimationResource {
     }
     
     @GET
+    @Path("/list-all")
     @Produces(MediaType.APPLICATION_JSON)
     public Multi<AnimationRepositoryEntry> listAll() {
         return Multi.createFrom().iterable(this.animationRepository.listAll());
