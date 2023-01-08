@@ -1,6 +1,6 @@
 package fr.wollfie.cottus.models.animation;
 
-import fr.wollfie.cottus.dto.ArmAnimation;
+import fr.wollfie.cottus.dto.animation.ArmAnimation;
 import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
 
 import javax.enterprise.context.ApplicationScoped;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.wollfie.cottus.utils.Preconditions;
 import org.ejml.simple.SimpleMatrix;
 
+import javax.swing.plaf.TableHeaderUI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.DoubleBinaryOperator;
@@ -36,6 +37,15 @@ public class Vector {
         double[] values = new double[dim];
         values[index] = 1;
         return new Vector(values);
+    }
+
+    /**
+     * Creates a vector from a list of real values
+     * @param values The real values
+     * @return The vector corresponding to the values
+     */
+    public static Vector fromList(List<Double> values) {
+        return new Vector(values.stream().mapToDouble(Double::doubleValue).toArray());
     }
 
     /**

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-@ApplicationScoped
 public class KinematicsModule {
     
     private enum IKAlgorithm {

@@ -1,4 +1,4 @@
-package fr.wollfie.cottus.dto;
+package fr.wollfie.cottus.dto.animation;
 
 import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.models.animation.pathing.BezierToAnimation;
@@ -54,13 +54,6 @@ public interface ArmAnimation {
                 return first.getDurationSecs()+second.getDurationSecs();
             }
         };
-    }
-
-    /**
-     * Saves the animation to ...
-     */
-    default void save() {
-        // TODO
     }
     
 // //======================================================================================\\

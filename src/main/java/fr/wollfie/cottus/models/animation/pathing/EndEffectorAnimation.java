@@ -1,6 +1,6 @@
 package fr.wollfie.cottus.models.animation.pathing;
 
-import fr.wollfie.cottus.dto.ArmAnimation;
+import fr.wollfie.cottus.dto.animation.ArmAnimation;
 import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;
