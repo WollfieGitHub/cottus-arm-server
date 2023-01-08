@@ -86,8 +86,7 @@ public class MatrixUtil {
     }
     
     /** @return The rotation matrix corresponding to the given rotation */
-    public static SimpleMatrix rotationFrom(Rotation rotation) {
-        Vector3D eulerAngles = rotation.getEulerAngles();
+    public static SimpleMatrix rotationFrom(Vector3D eulerAngles) {
         double c1 = cos(eulerAngles.x), s1 = sin(eulerAngles.x);
         double c2 = cos(eulerAngles.y), s2 = sin(eulerAngles.y);
         double c3 = cos(eulerAngles.z), s3 = sin(eulerAngles.z);

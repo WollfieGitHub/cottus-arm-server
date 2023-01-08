@@ -1,6 +1,6 @@
 package fr.wollfie.cottus.utils;
 
-import fr.wollfie.cottus.utils.maths.intervals.ContinuousInterval;
+import fr.wollfie.cottus.utils.maths.intervals.ConvexInterval;
 
 public class Preconditions {
     private Preconditions() {}
@@ -29,6 +29,6 @@ public class Preconditions {
      * @param value Actual Value
      */
     public static void checkInInterval(double lower, double upper, double value) {
-        if (!ContinuousInterval.from(lower, upper).contains(value)) { throw new IllegalArgumentException(); }
+        if (!ConvexInterval.from(lower, upper).contains(value)) { throw new IllegalArgumentException(); }
     }
 }

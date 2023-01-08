@@ -1,12 +1,12 @@
 package fr.wollfie.cottus.utils.maths.intervals.trigonometric;
 
 import fr.wollfie.cottus.utils.maths.MathUtils;
-import fr.wollfie.cottus.utils.maths.intervals.ContinuousInterval;
+import fr.wollfie.cottus.utils.maths.intervals.ConvexInterval;
 
 import static java.lang.Math.*;
 
 /** A trigonometric interval  */
-public abstract class TrigonometricInterval extends ContinuousInterval {
+public abstract class TrigonometricInterval extends ConvexInterval {
     
     /** Lower bound of the trigonometric interval */
     protected final double lowerBound;

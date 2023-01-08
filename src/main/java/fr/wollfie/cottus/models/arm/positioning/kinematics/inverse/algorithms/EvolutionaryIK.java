@@ -78,8 +78,8 @@ public class EvolutionaryIK implements IKSolver {
         // We don't care about the end effector's end angle
         n = arm.getNbOfJoints();
         // Desired configuration of the end effector
-        Vector3D rot = specification.getEndEffectorOrientation().getEulerAngles();
-        Vector3D zAxis = Axis3D.Z.rotatedAtOriginUsing(rot);
+        SimpleMatrix rot = specification.getEndEffectorOrientation().getMatrix();
+        Vector3D zAxis = MatrixUtil.mult(rot, Axis3D.Z.unitVector);
         Vector3D pos = specification.getEndEffectorPosition();
         xFinal = new Vector(pos.x, pos.y, pos.z, zAxis.x, zAxis.y, zAxis.z);
         

@@ -53,9 +53,9 @@ public class SimpleJacobianIK implements IKSolver {
         n = arm.getNbOfJoints();
         
         // Desired configuration of the end effector
-        Vector3D rot = specification.getEndEffectorOrientation().getEulerAngles();
+        SimpleMatrix rot = specification.getEndEffectorOrientation().getMatrix();
         // Rotate the Z axis of the base frame
-        Vector3D zAxis = Axis3D.Z.rotatedAtOriginUsing(rot);
+        Vector3D zAxis = MatrixUtil.mult(rot, Axis3D.Z.unitVector);
         Vector3D position = specification.getEndEffectorPosition();
         xFinal = new Vector(position.x, position.y, position.z, zAxis.x, zAxis.y, zAxis.z);
         
