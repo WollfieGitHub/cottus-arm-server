@@ -20,8 +20,8 @@ public class AnimationRepositoryImpl implements AnimationRepository, PanacheMong
     }
 
     @Override
-    public List<AnimationRepositoryEntry> listAll() {
-        return ((PanacheMongoRepository<AnimationRepositoryEntry>)this).listAll();
+    public List<AnimationRepositoryEntry> listAllAnimations() {
+        return listAll();
     }
 
     @Override

@@ -7,9 +7,8 @@ import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.mutiny.tuples.Tuple3;
 
 /**
- * An animation that animates linearly from the position (0, 0, 0) (most likely relative
- * to the current position of the end effector as this position is not feasible in absolute mode) 
- * to the specified end position in the given amount of seconds.
+ * An animation that animates linearly from the current position 
+ * to the specified end position (either relative or absolute) in the given amount of seconds.
  */
 public final class LineToAnimation extends EndEffectorAnimation {
     

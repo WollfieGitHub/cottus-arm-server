@@ -3,8 +3,10 @@ package fr.wollfie.cottus.resources.serial;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
+import fr.wollfie.cottus.services.PhysicalArmStateUpdaterService;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +21,8 @@ public class SerialCommunication {
     private static final long PACKET_FREQUENCY_MS = 50;
     SerialPort activePort;
     SerialPort[] ports = SerialPort.getCommPorts();
+    
+    @Inject PhysicalArmStateUpdaterService physicalArmStateUpdaterService;
     
     /** @return All the serial ports available for this device */
     public List<SerialPort> getAllPorts() {
@@ -41,10 +45,13 @@ public class SerialCommunication {
             @Override
             public void serialEvent(SerialPortEvent event) {
                 int size = event.getSerialPort().bytesAvailable();
+                
                 byte[] buffer = new byte[size];
                 event.getSerialPort().readBytes(buffer, size);
-                for(byte b:buffer)
-                    System.out.print((char)b);
+                
+                String msg = new String(buffer);
+                
+                physicalArmStateUpdaterService.onDistanceReceived(msg);
             }
 
             @Override

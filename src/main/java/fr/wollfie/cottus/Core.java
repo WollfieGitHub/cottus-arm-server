@@ -1,5 +1,6 @@
 package fr.wollfie.cottus;
 
+import fr.wollfie.cottus.resources.serial.SerialCommunication;
 import fr.wollfie.cottus.resources.websockets.ArmStateSocket;
 import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
@@ -26,6 +27,8 @@ public class Core {
     @Inject ArmAnimatorControllerService armAnimatorControllerService;
     @Inject ArmStateSocket armStateSocket;
     
+    @Inject SerialCommunication communication;
+    
 // //======================================================================================\\
 // ||                                                                                      ||
 // ||                                       LIFECYCLE                                      ||
@@ -38,6 +41,8 @@ public class Core {
         this.timer = Executors.newSingleThreadScheduledExecutor(Executors.defaultThreadFactory());
         this.timer.scheduleAtFixedRate(this::update, 0, UPDATE_DELAY, TimeUnit.MILLISECONDS);
         Log.info("The update loop started...");
+        
+        Log.infof("Available ports : %s", communication.getAllPorts());
     }
     
     /** Update the application's state */

@@ -43,6 +43,6 @@ public class ArmAnimationResource {
     @Path("/list-all")
     @Produces(MediaType.APPLICATION_JSON)
     public Multi<AnimationRepositoryEntry> listAll() {
-        return Multi.createFrom().iterable(this.animationRepository.listAll());
+        return Multi.createFrom().iterable(this.animationRepository.listAllAnimations());
     }
 }
