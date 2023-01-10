@@ -29,24 +29,23 @@ public interface CottusArm {
 // ||                                                                                      ||
 // \\======================================================================================//
     
+    /** @return True if the arm is ready to be taking commands, false otherwise */
+    @JsonGetter("isReady") boolean isReady();
+    
     /** @return The articulations of the arm */
-    @JsonGetter("joints")
-    List<Joint> joints();
+    @JsonGetter("joints") List<Joint> joints();
     
     /** @return The root of the arm, the first articulation */
-    @JsonIgnore
-    default Joint getRoot() { return joints().get(0); }
+    @JsonIgnore default Joint getRoot() { return joints().get(0); }
     
     /** @return The elbow of the arm, the third articulation from the root.
      * Because it has 3 degrees of freedom before it, its position can be set using I.K. */
-    @JsonIgnore
-    default Joint getElbow() { return joints().get(3); }
+    @JsonIgnore default Joint getElbow() { return joints().get(3); }
     
     /** @return The end effector of the arm, the last articulation,
      * because it has 6 degrees of freedom before it, its position and rotation 
      * can be set using I.K.*/
-    @JsonIgnore
-    default Joint getEndEffector() { 
+    @JsonIgnore default Joint getEndEffector() { 
         return joints().get(joints().size()-1);
     }
 
@@ -83,12 +82,10 @@ public interface CottusArm {
     }
     
     /** @return The DH Parameters Table of the arm, used for inverse and forward kinematics */
-    @JsonIgnore
-    DHTable dhTable();
+    @JsonIgnore DHTable dhTable();
     
     /** @return The number of articulations (virtual joints included) */
-    @JsonGetter("nbJoints")
-    default int getNbOfJoints() { return joints().size(); }
+    @JsonGetter("nbJoints") default int getNbOfJoints() { return joints().size(); }
 
     /** @return The number of articulations, i.e., Degrees of freedom */
     @JsonGetter("nbNonVirtualJoints")
@@ -195,5 +192,7 @@ public interface CottusArm {
     default double getAngle(int jointIndex) {
         return getJoint(jointIndex, false).getAngleRad();
     }
-    
+
+    /** Sets the arm ready for receiving commands */
+    void setReady();
 }

@@ -2,6 +2,7 @@ package fr.wollfie.cottus.resources.websockets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.security.WebsocketTokenManager;
 import fr.wollfie.cottus.services.ArmManipulatorService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
@@ -73,12 +74,17 @@ public class ArmStateSocket {
     }
 
     @Inject ObjectMapper defaultObjectMapper;
+    
+    public record ArmState(CottusArm simulated, CottusArm driven) { }
 
     public void broadCastArmState() {
         // Broadcast a change of state in the system
         connectedClients.values().forEach(client -> {
             try {
-                 client.getAsyncRemote().sendObject(defaultObjectMapper.writeValueAsString(armManipulatorService.getArmState()));
+                 client.getAsyncRemote().sendObject(defaultObjectMapper.writeValueAsString(new ArmState(
+                         armManipulatorService.getArmState(),
+                         armManipulatorService.getDrivenArmState()
+                 )));
             } catch (JsonProcessingException e) { throw new RuntimeException(e); }
         } );
     }

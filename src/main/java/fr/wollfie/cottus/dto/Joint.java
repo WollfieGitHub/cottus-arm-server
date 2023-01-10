@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
+import fr.wollfie.cottus.models.arm.positioning.joints.DrivenJoint;
+import org.jboss.resteasy.reactive.server.core.serialization.EntityWriter;
 
 public interface Joint {
     
@@ -50,5 +52,6 @@ public interface Joint {
     /** @return The angle in radians to which the articulation is rotated */
     @JsonGetter("angleRad")
     double getAngleRad();
+    
     
 }

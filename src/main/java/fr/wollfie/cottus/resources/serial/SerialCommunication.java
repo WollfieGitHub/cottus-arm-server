@@ -69,7 +69,7 @@ public class SerialCommunication {
      */
     public void writeUnreliably(String data) {
         long nowMs = System.currentTimeMillis();
-        if (nowMs - lastPacketMs > PACKET_FREQUENCY_MS) {
+        if (nowMs - lastPacketMs > PACKET_FREQUENCY_MS && this.activePort != null) {
             byte[] toWrite = data.getBytes(StandardCharsets.UTF_8);
             activePort.writeBytes(toWrite, toWrite.length);
             lastPacketMs = nowMs;

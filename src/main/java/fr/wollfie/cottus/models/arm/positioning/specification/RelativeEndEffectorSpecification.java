@@ -1,5 +1,8 @@
 package fr.wollfie.cottus.models.arm.positioning.specification;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.specification.EndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
@@ -25,11 +28,12 @@ public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
      * @param endEffectorOrientation The orientation difference of the end effector
      * @param preferredArmAngle The preferred arm angle difference
      */
+    @JsonCreator
     private RelativeEndEffectorSpecification(
-            AbsoluteEndEffectorSpecification root,
-            Vector3D endEffectorPosition, 
-            Rotation endEffectorOrientation,
-            double preferredArmAngle
+            @JsonProperty("root") AbsoluteEndEffectorSpecification root,
+            @JsonProperty("endEffectorPosition") Vector3D endEffectorPosition,
+            @JsonProperty("endEffectorRotation") Rotation endEffectorOrientation,
+            @JsonProperty("armAngle") double preferredArmAngle
     ) {
         super(endEffectorPosition, endEffectorOrientation, preferredArmAngle);
         this.root = root;

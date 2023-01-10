@@ -2,6 +2,7 @@ package fr.wollfie.cottus;
 
 import fr.wollfie.cottus.resources.serial.SerialCommunication;
 import fr.wollfie.cottus.resources.websockets.ArmStateSocket;
+import fr.wollfie.cottus.services.ArmCommunicationService;
 import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import io.quarkus.logging.Log;
@@ -28,6 +29,7 @@ public class Core {
     @Inject ArmStateSocket armStateSocket;
     
     @Inject SerialCommunication communication;
+    @Inject ArmCommunicationService armCommunicationService;
     
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -57,6 +59,7 @@ public class Core {
             }
             
             armStateSocket.broadCastArmState();
+            armCommunicationService.updateArmState();
         } catch (Exception e) { e.printStackTrace(); }
     }
 
@@ -68,4 +71,5 @@ public class Core {
         }
         Log.info("Update loop has been shutdown.");
     }
+
 }

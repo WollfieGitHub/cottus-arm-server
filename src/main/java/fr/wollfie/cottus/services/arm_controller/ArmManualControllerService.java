@@ -27,4 +27,5 @@ public interface ArmManualControllerService extends ArmControllerService {
      * @return The angle of the joint
      */
     double getAngle(int jointIndex);
+
 }

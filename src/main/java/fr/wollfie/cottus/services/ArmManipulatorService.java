@@ -14,8 +14,17 @@ public interface ArmManipulatorService {
      */
     void moveGiven(AngleSpecification specification) throws AngleOutOfBoundsException;
 
+    /**
+     * Move the driven arm using the angles found in the given specifications.
+     * @param specification A specification of all dofs of the arm
+     */
+    void moveDrivenGiven(AngleSpecification specification);
+    
     /** @return The current state of the arm, i.e., a pointer to the Arm Object */
     CottusArm getArmState();
+
+    /** @return The current state of the driven arm */
+    CottusArm getDrivenArmState();
 
     /** Sets the given joint the specified angle */
     void setAngle(int jointIndex, double angleRad) throws AngleOutOfBoundsException;
@@ -26,4 +35,7 @@ public interface ArmManipulatorService {
      * @return The angle of the joint
      */
     double getAngle(int jointIndex);
+    
+    /** Sets the arm ready for receiving commands */
+    void setReady();
 }

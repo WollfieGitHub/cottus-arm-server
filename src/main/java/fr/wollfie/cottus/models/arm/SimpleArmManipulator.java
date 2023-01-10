@@ -3,17 +3,19 @@ package fr.wollfie.cottus.models.arm;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.JointBounds;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
-import fr.wollfie.cottus.exception.NoSolutionException;
+import fr.wollfie.cottus.models.arm.cottus_arm.DrivenCottusArm;
+import fr.wollfie.cottus.models.arm.cottus_arm.SimulatedCottusArm;
 import fr.wollfie.cottus.models.arm.positioning.joints.bounds.IntervalJointBounds;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.specification.AngleSpecification;
-import fr.wollfie.cottus.services.ArmLoaderService;
 import fr.wollfie.cottus.services.ArmManipulatorService;
 import fr.wollfie.cottus.utils.maths.intervals.trigonometric.TrigonometricInterval;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
+import java.util.List;
 
 import static java.lang.Math.*;
 
@@ -30,7 +32,7 @@ public class SimpleArmManipulator implements ArmManipulatorService {
                 new String[] {"Shoulder_0", "Shoulder_1", "Shoulder_2", "Elbow", "Wrist_0", "Wrist_1", "Wrist_2", "EndEffector"}
     );
 
-    private static final JointBounds[] JOINT_BOUNDS_1 = new JointBounds[] {
+    private static final List <JointBounds> JOINT_BOUNDS_1 = List.of(
             IntervalJointBounds.ANY,
             IntervalJointBounds.of(TrigonometricInterval.withDeg(-90, +45)),
             IntervalJointBounds.ANY,
@@ -38,23 +40,26 @@ public class SimpleArmManipulator implements ArmManipulatorService {
             IntervalJointBounds.ANY,
             IntervalJointBounds.of(TrigonometricInterval.withDeg(-90, +45)),
             IntervalJointBounds.ANY,
-            IntervalJointBounds.EMPTY, // End effector
-    };
+            IntervalJointBounds.EMPTY // End effector
+    );
 
     private CottusArm cottusArm;
-    public CottusArm getArmState() { return this.cottusArm; }
+    @Override public CottusArm getArmState() { return this.cottusArm; }
 
+    private CottusArm drivenCottusArm;
+    @Override public CottusArm getDrivenArmState() { return this.drivenCottusArm; }
+    
 // //======================================================================================\\
 // ||                                                                                      ||
 // ||                                       INITIALIZATION                                 ||
 // ||                                                                                      ||
 // \\======================================================================================//
 
-    @Inject ArmLoaderService armLoaderService;
 
     @PostConstruct
     void initArm() {
-        this.cottusArm = armLoaderService.buildNewArmFrom(DH_TABLE_1, JOINT_BOUNDS_1);
+        this.cottusArm = new SimulatedCottusArm(DH_TABLE_1, JOINT_BOUNDS_1);
+        this.drivenCottusArm = new DrivenCottusArm(this.cottusArm);
     }
     
     @Override
@@ -65,10 +70,22 @@ public class SimpleArmManipulator implements ArmManipulatorService {
     }
 
     @Override
+    public void moveDrivenGiven(AngleSpecification specification) {
+        try {
+            this.drivenCottusArm.setAngles(specification.getAnglesFor(this.drivenCottusArm));
+        } catch (AngleOutOfBoundsException e) { throw new RuntimeException(e); }
+    }
+
+    @Override
     public void setAngle(
             int jointIndex, double angleRad
     ) throws AngleOutOfBoundsException { this.cottusArm.setAngle(jointIndex, angleRad); }
 
     @Override
     public double getAngle(int jointIndex) { return this.cottusArm.getAngle(jointIndex); }
+
+    @Override
+    public void setReady() {
+        this.cottusArm.setReady();
+    }
 }

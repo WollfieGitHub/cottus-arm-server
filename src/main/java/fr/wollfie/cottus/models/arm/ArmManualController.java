@@ -70,4 +70,5 @@ public class ArmManualController implements ArmManualControllerService {
 
     @Override
     public double getAngle(int jointIndex) { return armManipulatorService.getAngle(jointIndex); }
+
 }

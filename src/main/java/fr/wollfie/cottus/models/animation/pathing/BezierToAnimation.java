@@ -1,5 +1,7 @@
 package fr.wollfie.cottus.models.animation.pathing;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.utils.maths.MathUtils;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
@@ -16,26 +18,44 @@ import static java.lang.Math.pow;
  * An animation following a Bézier curve with specified start position, end position
  * and anchor points
  */
-public class BezierToAnimation extends EndEffectorAnimation {
+public class BezierToAnimation extends EndEffectorAnimation implements AnimationPrimitive {
 
     /** The duration of the animation in seconds */
-    private final double timeSec;
+    @JsonProperty("timeSec") private final double timeSec;
+    @JsonGetter("timeSec") public double getTimeSec() { return timeSec; }
+
     /** The curve, parametrized from 0 to 1 (start to finish) */
     private final Function<Double, Vector3D> bezierCurve;
+    
+    @JsonProperty("anchorPoints") private final Vector3D[] anchorPoints;
+    @JsonGetter("anchorPoints") public Vector3D[] getAnchorPoints() { return anchorPoints; }
 
-    public BezierToAnimation(boolean relative, Vector3D endPosition, double timeSec, Vector3D... anchorPoints) {
+    
+    @JsonProperty("endPosition") private final Vector3D endPosition;
+    @JsonGetter("endPosition") public Vector3D getEndPosition() { return endPosition; }
+
+    public BezierToAnimation(
+            @JsonProperty("relative") boolean relative, 
+            @JsonProperty("endPosition") Vector3D endPosition, 
+            @JsonProperty("timeSec") double timeSec, 
+            @JsonProperty("anchorPoints") Vector3D... anchorPoints
+    ) {
         super(relative);
         this.timeSec = timeSec;
-        
+        this.endPosition = endPosition;
+        this.anchorPoints = anchorPoints;
+
         // First and last coefficient of the curve is end and begin points
         List<Vector3D> points = new ArrayList<>();
         points.add(Vector3D.Zero);
-        points.addAll(List.of(anchorPoints));
-        points.add(endPosition);
+        points.addAll(List.of(this.anchorPoints));
+        points.add(this.endPosition);
         
         // Compute the "equation" of the curve
         this.bezierCurve = MathUtils.bezierCurve(points);
     }
+    
+    
 
     @Override
     public double getDurationSecs() {

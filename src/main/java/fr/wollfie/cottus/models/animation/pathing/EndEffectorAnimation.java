@@ -1,5 +1,7 @@
 package fr.wollfie.cottus.models.animation.pathing;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.dto.animation.ArmAnimation;
 import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
@@ -22,7 +24,8 @@ public abstract class EndEffectorAnimation implements ArmAnimation {
      *     <li>Absolute, given in the global 3D space</li>
      * </ul>
      * */
-    protected final boolean relative;
+    @JsonProperty("relative") protected final boolean relative;
+    @JsonGetter("relative") public boolean isRelative() { return relative; }
 
     public EndEffectorAnimation(boolean relative) { this.relative = relative; }
 

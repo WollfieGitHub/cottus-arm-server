@@ -14,7 +14,6 @@ public class DrivenJoint extends JointImpl {
 // \\======================================================================================//
     
     @JsonProperty("target") private Joint target;
-    @JsonProperty("stepSize") private double stepSize;
     
 //=========   ====  == =
 //      ANGLE RAD PROPERTY
@@ -35,29 +34,10 @@ public class DrivenJoint extends JointImpl {
             @JsonProperty("target") Joint target,
             @JsonProperty("parent") DrivenJoint parent,
             JointBounds bounds,
-            JointTransform transform,
-            @JsonProperty("stepSize") double stepSize
+            JointTransform transform
     ) {
         super(String.format("%s_wrapper", target.getName()), parent, bounds, transform, target.isVirtual());
         this.target = target;
-        this.stepSize = stepSize;
     }
 
-    /**
-     * Updates the position and rotation of the articulation, by shadowing the articulation
-     * it has for target
-     */
-    public void update() {
-        // Update the angle by making it smoothly change towards the target
-        double angleRad = getAngleRad();
-        this.setAngleRad(stepSize * target.getAngleRad() + (1-stepSize) * angleRad);
-    }
-
-//=========   ====  == =
-//      OVERRIDE PROPERTIES
-//=========   ====  == =
-    
-    @Override
-    public Joint getParent() { return null; }
-    
 }

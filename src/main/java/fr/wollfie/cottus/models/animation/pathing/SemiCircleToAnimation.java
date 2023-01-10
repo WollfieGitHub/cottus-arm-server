@@ -1,5 +1,7 @@
 package fr.wollfie.cottus.models.animation.pathing;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.utils.Preconditions;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
@@ -12,7 +14,7 @@ import static java.lang.Math.*;
  * angle in total, which center is situated somewhere in the middle of the (relative or absolute) 
  * origin and the desired end position.
  */
-public class SemiCircleToAnimation extends EndEffectorAnimation {
+public class SemiCircleToAnimation extends EndEffectorAnimation implements AnimationPrimitive {
 
     /** Radius of the circle */
     private final double radius;
@@ -24,8 +26,18 @@ public class SemiCircleToAnimation extends EndEffectorAnimation {
     private final Vector3D u;
     private final Vector3D v;
     
-    private final double timeSec;
+    @JsonProperty("timeSec") private final double timeSec;
+    @JsonGetter("timeSec") public double getTimeSec() { return timeSec; }
+    
+    @JsonProperty("circleDirection") private final Vector3D circleDirection;
+    @JsonGetter("circleDirection") public Vector3D getCircleDirection() { return circleDirection; }
 
+    @JsonProperty("endPosition") private final Vector3D endPosition;
+    @JsonGetter("endPosition") public Vector3D getEndPosition() { return endPosition; }
+
+    @JsonProperty("angleDeg") private final double angleDeg;
+    @JsonGetter("angleDeg") public double getAngleDeg() { return angleDeg; }
+    
     /**
      * <p>
      *     Creates an animation that animates the end effector in a semicircle, of the specified 
@@ -40,19 +52,28 @@ public class SemiCircleToAnimation extends EndEffectorAnimation {
      * @param angleDeg The angle in degrees of the semicircle
      * @param circleDirection The direction of circle
      */
-    public SemiCircleToAnimation(boolean relative, Vector3D endPosition, double timeSec, 
-                                 double angleDeg, Vector3D circleDirection) {
+    public SemiCircleToAnimation(
+            @JsonProperty("relative") boolean relative,
+            @JsonProperty("endPosition") Vector3D endPosition,
+            @JsonProperty("timeSec") double timeSec, 
+            @JsonProperty("angleDeg") double angleDeg, 
+            @JsonProperty("circleDirection") Vector3D circleDirection
+    ) {
         super(relative);
         Preconditions.checkArgument(!circleDirection.isZero());
+        this.circleDirection = circleDirection;
+        this.endPosition = endPosition;
+        this.angleDeg = angleDeg;
+        this.timeSec = timeSec;
         // The {circleDirection} vector is the height of the isosceles triangle which
         // goes through the summit which is the center of the circle. This isosceles triangle has
         // its sides of equal lengths equal to the radius of the circle
         // This triangle's third side is the chord length of the remaining arc
         // https://www.omnicalculator.com/math/arc-length
-        this.angleRad = toRadians(angleDeg);
+        this.angleRad = toRadians(this.angleDeg);
         double arcAngle = PI/2.0 - this.angleRad;
-        
-        Vector3D chord = endPosition.minus(Vector3D.Zero);
+
+        Vector3D chord = this.endPosition.minus(Vector3D.Zero);
         double chordLength = chord.norm();
         
         double a = sin(arcAngle/2.0);
@@ -72,7 +93,6 @@ public class SemiCircleToAnimation extends EndEffectorAnimation {
         this.v = chord.normalized();
         
         this.radius = radius;
-        this.timeSec = timeSec;
     }
 
     @Override

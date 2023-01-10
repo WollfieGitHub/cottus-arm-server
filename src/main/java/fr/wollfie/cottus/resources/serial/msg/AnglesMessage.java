@@ -2,12 +2,11 @@ package fr.wollfie.cottus.resources.serial.msg;
 
 import fr.wollfie.cottus.utils.Preconditions;
 
-import javax.ws.rs.HEAD;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Message = "AN[value]D[value]D[value]D...D[value]D" */
-public class AnglesMessage extends ArduinoMessage {
+public class AnglesMessage extends EspMessage {
     
     public static final String HEADER = "AN";
     private static final String END_VALUE_MARKER = "D";
@@ -43,7 +42,7 @@ public class AnglesMessage extends ArduinoMessage {
     }
 
     @Override
-    public String getMessage() {
+    public String getDataMsg() {
         Preconditions.checkArgument(!this.isEmpty());
         
         StringBuilder stringBuilder = new StringBuilder();
