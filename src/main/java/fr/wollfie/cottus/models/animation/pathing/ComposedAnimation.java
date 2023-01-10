@@ -2,6 +2,7 @@ package fr.wollfie.cottus.models.animation.pathing;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import fr.wollfie.cottus.dto.animation.AnimationRepositoryEntry;
 import fr.wollfie.cottus.dto.animation.ArmAnimation;
 import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.utils.Preconditions;
@@ -11,7 +12,10 @@ import io.smallrye.mutiny.tuples.Tuple2;
 import java.util.ArrayList;
 import java.util.List;
 
-/** A compositions of  */
+/**
+ * A compositions of {@link AnimationPrimitive}s which is serializable, and hence can be saved 
+ * as a {@link AnimationRepositoryEntry }
+ */
 public class ComposedAnimation implements AnimationPrimitive {
 
     @JsonProperty("animations") private final List<AnimationPrimitive> animations = new ArrayList<>();
