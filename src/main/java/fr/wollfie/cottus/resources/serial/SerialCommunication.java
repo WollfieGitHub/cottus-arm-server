@@ -3,7 +3,7 @@ package fr.wollfie.cottus.resources.serial;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
-import fr.wollfie.cottus.services.PhysicalArmStateUpdaterService;
+import fr.wollfie.cottus.services.ArmCommunicationService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -22,7 +22,8 @@ public class SerialCommunication {
     SerialPort activePort;
     SerialPort[] ports = SerialPort.getCommPorts();
     
-    @Inject PhysicalArmStateUpdaterService physicalArmStateUpdaterService;
+    @Inject
+    ArmCommunicationService armCommunicationService;
     
     /** @return All the serial ports available for this device */
     public List<SerialPort> getAllPorts() {
@@ -51,7 +52,7 @@ public class SerialCommunication {
                 
                 String msg = new String(buffer);
                 
-                physicalArmStateUpdaterService.onDistanceReceived(msg);
+                armCommunicationService.onMsgReceived(msg);
             }
 
             @Override

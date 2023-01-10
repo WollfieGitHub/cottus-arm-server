@@ -40,6 +40,22 @@ public class ArmAnimationResource {
     }
     
     @GET
+    @Path("/min-time")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Uni<Double> getMinTimeSecFor(
+            @QueryParam("animation_name") String animationName,
+            @QueryParam("nb_points") int nbPoints
+    ) {
+        return Uni.createFrom().item(Unchecked.supplier(() -> {
+            ArmAnimation animation = animationRepository.getAnimationByName(animationName).getAnimation();
+
+            try { return animationSampler.getMinTimeSec(animation, nbPoints); }
+            catch (NoSolutionException e) { throw new RuntimeException(String.format("The animation %s has" +
+                    " some unreachable points...", animationName)); }
+        }));
+    }
+    
+    @GET
     @Path("/list-all")
     @Produces(MediaType.APPLICATION_JSON)
     public Multi<AnimationRepositoryEntry> listAll() {

@@ -4,10 +4,10 @@ import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.resources.serial.SerialCommunication;
 
 /** 
- * The {@link PhysicalArmStateUpdaterService} is responsible for
+ * The {@link ArmCommunicationService} is responsible for
  * actually moving the physical arm from the {@link fr.wollfie.cottus.dto.CottusArm} state
  * */
-public interface PhysicalArmStateUpdaterService {
+public interface ArmCommunicationService {
 
     /**
      * Update the joints of the physical arm given the virtual state
@@ -23,5 +23,11 @@ public interface PhysicalArmStateUpdaterService {
      * @param angleDiffsRad The list of angle difference in radians relative to 
      *                      the stepper motors' target rotation
      */
-    void onDistanceReceived(String angleDiffsRad);
+    void onMsgReceived(String angleDiffsRad);
+
+    /**
+     * @return The number of radians per seconds of the motors (For now they all have the same,
+     * taking into account their reduction ratio and micro stepping)
+     */
+    double getMotorSpeed();
 }

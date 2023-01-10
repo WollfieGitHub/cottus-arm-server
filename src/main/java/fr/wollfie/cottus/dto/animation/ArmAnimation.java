@@ -22,6 +22,7 @@ public interface ArmAnimation {
     double getDurationSecs();
     
     
+    
 // //======================================================================================\\
 // ||                                                                                      ||
 // ||                                       ANIMATION COMPOSITION                          ||
