@@ -2,7 +2,6 @@ package fr.wollfie.cottus.models.arm.positioning.kinematics.inverse;
 
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.specification.EndEffectorSpecification;
-import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.Analytical7DOFsIK;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.algorithms.EvolutionaryIK;
@@ -14,14 +13,11 @@ import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
-import io.quarkus.logging.Log;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 public class KinematicsModule {
     
@@ -45,7 +41,7 @@ public class KinematicsModule {
      */
     @NotNull 
     public static Vector forward(DHTable table, Vector angles) {
-        table.setThetas(angles);
+        table.setVarThetas(angles);
         int n = table.size()-1;
         SimpleMatrix t0n = table.getTransformMatrix(0, n);
         Vector3D translation = MatrixUtil.extractTranslation(t0n);

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.wollfie.cottus.utils.Preconditions;
 import fr.wollfie.cottus.utils.maths.Vector;
-import fr.wollfie.cottus.utils.maths.Vector3D;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.Arrays;
@@ -144,7 +143,7 @@ public class DHTable {
         return result;
     }
 
-    public void setThetas(Vector q) {
+    public void setVarThetas(Vector q) {
         for (int i = 0; i < size; i++) {
             if (!isVirtual(i)) { setVarTheta(i, q.get(i)); }
         }

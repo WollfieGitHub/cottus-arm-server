@@ -73,9 +73,10 @@ public class Analytical7DOFsIK implements IKSolver {
             CottusArm arm, AbsoluteEndEffectorSpecification specification,
             double maxPosError, double maxRotError
     ) throws NoSolutionException {
+        Map<Integer, JointBounds> bounds = getBounds(arm);
         
         table = arm.dhTable().copy();
-        table.setThetas( Vector.Zero(table.size()) );
+        table.setVarThetas( Vector.Zero(table.size()) );
         
         // Rotate the Z axis around the Y axis so that default rotation is end effector pointing
         // towards X axis
@@ -95,6 +96,25 @@ public class Analytical7DOFsIK implements IKSolver {
         uSw = xSw.normalized();
         uSwX = uSw.extract3D().skewSymmetric();
         uSwT = uSw.toMatrix().mult(uSw.toMatrix().transpose());
+        
+//=========   ====  == =
+//      COMPUTE DESIRED ANGLES (FARTHEST ANGLES FROM JOINT LIMITS
+//=========   ====  == =
+
+        JointBounds boundsI;
+        for (int i = 0; i < 7; i++) {
+            boundsI = bounds.get(i);
+            // Middle value between the two bounds
+            table.setVarTheta(0, boundsI.getLowerBound() + abs(boundsI.getUpperBound() - boundsI.getLowerBound()) / 2.0);
+        }
+
+        // Now we have the desired rotation matrices for angles furthest from the bounds
+        R03_0D = table.getRotationMatrix(0, 3);
+        R47_D = table.getRotationMatrix(4, 7);
+        
+//=========   ====  == =
+//      COMPUTE THETA 4
+//=========   ====  == =
         
         computeTheta4();
         table.setVarTheta(3, theta4);
@@ -117,36 +137,29 @@ public class Analytical7DOFsIK implements IKSolver {
         
         table.setVarTheta(0, theta1_0);
         table.setVarTheta(1, theta2_0);
-        
-        // Given that theta3_0 = 0
-        R03_0 = table.getRotationMatrix(0, 3);
-        
-        // Compute all remaining angles (1, 2, 3, 5, 6, 7)
-        this.computeRemainingAngleGiven(specification.getPreferredArmAngle());
 
-        // Now we have the desired rotation matrices
-        R03_0D = table.getRotationMatrix(0, 3);
-        R47_D = table.getRotationMatrix(4, 7);
+        // Compute aS, bS, ... cW
+        this.computeMatrices();
         
-        List<Double> angles = List.of(theta1, theta2, theta3, theta4, theta5, theta6, theta7);
-        
-        if (angles.stream().anyMatch(a -> a.isNaN())) { throw new NoSolutionException(); }
-
         try {
+            
+            // Compute set of feasible arm angles
             FeasibleArmAngles feasibleArmAngles
-                    = new FeasibleArmAngles( JOINT_ANALYTIC_INFO_MAP, getBounds(arm), aS, bS, cS, aW, bW, cW );
-
+                    = new FeasibleArmAngles( JOINT_ANALYTIC_INFO_MAP, bounds, aS, bS, cS, aW, bW, cW );
+            // Compute arm angle avoiding joint limits
             JointLimitAvoidance jointLimitAvoidance
                     = new JointLimitAvoidance( feasibleArmAngles, aS, bS, cS, R03_0D, aW, bW, cW, R47_D);
 
             // Compute the optimal arm angle that avoids joints' bounds
             double optPsi = jointLimitAvoidance.getFeasiblePsiOpt();
+            
             // Recompute the angles for the optimal arm angle
-            this.computeRemainingAngleGiven(optPsi);
+            this.computeRemainingAnglesGiven(optPsi);
             
         } catch (Exception e) { e.printStackTrace(); }
-        
-        angles = List.of(theta1, theta2, theta3, theta4, theta5, theta6, theta7);;
+
+        List<Double> angles = List.of(theta1, theta2, theta3, theta4, theta5, theta6, theta7);
+        if (angles.stream().anyMatch(a -> a.isNaN())) { throw new NoSolutionException(); }
         
         return angles;
     }
@@ -161,21 +174,13 @@ public class Analytical7DOFsIK implements IKSolver {
         return result;
     }
     
-    private void computeRemainingAngleGiven(double psi) {
-        
+    /** Compute Theta1, Theta2, Theta3, Theta5, Theta6, Theta7, given the Matrices aS, ..., cW and psi */
+    private void computeRemainingAnglesGiven(double psi) {
         // Compute cos and sin of arm angle
         this.psi = psi;
         this.cPsi = cos(psi);
         this.sPsi = sin(psi);
-
-//=========   ====  == =
-//      COMPUTE SHOULDER ANGLES
-//=========   ====  == =
-
-        aS = uSwX.mult(R03_0);
-        bS = uSwX.mult(uSwX).scale(-1).mult(R03_0);
-        cS = uSwT.mult(R03_0);
-
+        
         theta1 = computeTheta(0, aS, bS, cS);
         theta2 = computeTheta(1, aS, bS, cS);
         theta3 = computeTheta(2, aS, bS, cS);
@@ -183,16 +188,6 @@ public class Analytical7DOFsIK implements IKSolver {
         table.setVarTheta(0, theta1);
         table.setVarTheta(1, theta2);
         table.setVarTheta(2, theta3);
-
-//=========   ====  == =
-//      COMPUTE WRIST ANGLES
-//=========   ====  == =
-
-        R34 = table.getRotationMatrix(3,4);
-
-        aW = R34.transpose().mult( aS.transpose() ).mult( rD );
-        bW = R34.transpose().mult( bS.transpose() ).mult( rD );
-        cW = R34.transpose().mult( cS.transpose() ).mult( rD );
         
         theta5 = computeTheta(4, aW, bW, cW);
         theta6 = computeTheta(5, aW, bW, cW);
@@ -201,6 +196,22 @@ public class Analytical7DOFsIK implements IKSolver {
         table.setVarTheta(4, theta5);
         table.setVarTheta(5, theta6);
         table.setVarTheta(6, theta7);
+    }
+
+    private void computeMatrices() {
+        
+        // Given that theta3_0 = 0
+        R03_0 = table.getRotationMatrix(0, 3);
+        
+        aS = uSwX.mult(R03_0);
+        bS = uSwX.mult(uSwX).scale(-1).mult(R03_0);
+        cS = uSwT.mult(R03_0);
+        
+        R34 = table.getRotationMatrix(3,4);
+
+        aW = R34.transpose().mult( aS.transpose() ).mult( rD );
+        bW = R34.transpose().mult( bS.transpose() ).mult( rD );
+        cW = R34.transpose().mult( cS.transpose() ).mult( rD );
     }
 
     /** @return The value of (a_ij * sinPsi + b_ij * cosPsi + c_ij */
