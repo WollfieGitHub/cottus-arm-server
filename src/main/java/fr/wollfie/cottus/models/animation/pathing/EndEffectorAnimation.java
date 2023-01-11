@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.dto.animation.ArmAnimation;
 import fr.wollfie.cottus.dto.specification.ArmSpecification;
+import fr.wollfie.cottus.dto.specification.EndEffectorSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;
 import fr.wollfie.cottus.utils.maths.Vector3D;
@@ -15,7 +16,7 @@ import io.smallrye.mutiny.tuples.Tuple3;
  */
 public abstract class EndEffectorAnimation implements ArmAnimation {
 
-    private AbsoluteEndEffectorSpecification firstFrame = null;
+    private EndEffectorSpecification firstFrame = null;
     
     /** 
      * Whether the end effector's configuration is given :
@@ -30,19 +31,26 @@ public abstract class EndEffectorAnimation implements ArmAnimation {
     public EndEffectorAnimation(boolean relative) { this.relative = relative; }
 
     @Override
-    public ArmSpecification evaluateAt(double secFromStart) {
+    public EndEffectorSpecification evaluateAt(double secFromStart) {
         Tuple3<Vector3D, Rotation, Double> frame = this.relativeEvaluateAt(secFromStart);
+        // If it is the first frame, create the reference for all the frames
+        if (firstFrame == null) { firstFrame = RelativeEndEffectorSpecification.createRelativeToActive(
+                frame.getItem1(), frame.getItem2(), frame.getItem3()
+        ); }
         if (this.relative) {
-            // If it is the first frame, create the reference for all the frames
-            if (firstFrame == null) { firstFrame = new AbsoluteEndEffectorSpecification(
-                    frame.getItem1(), frame.getItem2(), frame.getItem3()
-            ); }
             // And return the frame with a link to the first frame
             return RelativeEndEffectorSpecification.createRelativeTo(
                     firstFrame, frame.getItem1(), frame.getItem2(), frame.getItem3()
             );
         } else {
-            return new AbsoluteEndEffectorSpecification(frame.getItem1(), frame.getItem2(), frame.getItem3());
+            // TODO DOESN'T WORK
+            // And return the frame with a link to the first frame
+            return RelativeEndEffectorSpecification.createRelativeTo(
+                    firstFrame,
+                    frame.getItem1().minus(firstFrame.getEndEffectorPosition()),
+                    frame.getItem2().plus(firstFrame.getEndEffectorOrientation().inverted()),
+                    frame.getItem3() - firstFrame.getPreferredArmAngle()
+            );
         }
     }
 

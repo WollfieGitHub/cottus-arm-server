@@ -23,7 +23,6 @@ public class AbsoluteEndEffectorSpecification extends EndEffectorSpecification {
 
     @Override
     public List<Double> getAnglesFor(CottusArm cottusArm) throws NoSolutionException {
-        KinematicsModule module = new KinematicsModule();
         try {
             return KinematicsModule.inverseSolve(cottusArm, this).get();
         } catch (InterruptedException | ExecutionException e) {

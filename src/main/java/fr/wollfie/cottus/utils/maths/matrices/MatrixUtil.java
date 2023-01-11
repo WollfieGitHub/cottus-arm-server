@@ -14,6 +14,13 @@ import static java.lang.Math.atan2;
 public class MatrixUtil {
     private MatrixUtil() {}
     
+    public static boolean isNan(SimpleMatrix matrix) {
+        for (int i = 0; i < matrix.numRows(); i++) { for (int j = 0; j < matrix.numCols(); j++) {
+            if (Double.isNaN(matrix.get(i, j))) { return true; }
+        } }
+        return false;
+    }
+    
     public static Vector mult(SimpleMatrix matrix, Vector other) {
         Preconditions.checkArgument(matrix.numCols() == other.dim);
         double[] values = new double[matrix.numRows()];

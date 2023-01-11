@@ -40,7 +40,8 @@ public class KinematicsModule {
      * where {@code pos} is the position and {@code rot} is the euler angles of the rotation
      */
     @NotNull 
-    public static Vector forward(DHTable table, Vector angles) {
+    public static Vector forward(DHTable table, Vector angles, boolean copyTable) {
+        if (copyTable) { table = table.copy(); }
         table.setVarThetas(angles);
         int n = table.size()-1;
         SimpleMatrix t0n = table.getTransformMatrix(0, n);
@@ -60,7 +61,7 @@ public class KinematicsModule {
     ) {
         AbsoluteEndEffectorSpecification absoluteEndEffectorSpecification;
         if (endEffectorSpecification instanceof RelativeEndEffectorSpecification relativeSpecification) {
-            absoluteEndEffectorSpecification = relativeSpecification.toAbsolute(arm);
+            absoluteEndEffectorSpecification = relativeSpecification.fixAsAbsolute(arm);
         // Otherwise the specification is absolute
         } else { absoluteEndEffectorSpecification = (AbsoluteEndEffectorSpecification) endEffectorSpecification; }
         

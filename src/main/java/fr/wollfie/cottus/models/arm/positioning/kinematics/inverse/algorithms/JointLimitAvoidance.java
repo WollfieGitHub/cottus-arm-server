@@ -20,8 +20,10 @@ import static java.lang.Math.*;
  */
 public class JointLimitAvoidance {
     
-    private static final double SHOULDER_LIMITS_AVOIDANCE_WEIGHT = 1;
-    private static final double WRIST_LIMITS_AVOIDANCE_WEIGHT = 1;
+    // Since the shoulder supports a heavier load, it should
+    // have priority on joint limit avoidance
+    private static final double SHOULDER_LIMITS_AVOIDANCE_WEIGHT = 2;
+    private static final double WRIST_LIMITS_AVOIDANCE_WEIGHT = 0.2;
 
     private final FeasibleArmAngles feasibleArmAngles;
     private final double aSt, bSt, cSt;
@@ -46,10 +48,10 @@ public class JointLimitAvoidance {
         bWt = bW.mult( R47_D.transpose() ).trace();
         cWt = cW.mult( R47_D.transpose() ).trace();
         
-        Log.infof("%5.3f, %5.3f, %5.3f, %5.3f, \n%s\n%s", aSt, bSt, aWt, bWt, R03_D, R47_D);
-        
-        double a = SHOULDER_LIMITS_AVOIDANCE_WEIGHT * aSt + WRIST_LIMITS_AVOIDANCE_WEIGHT * aWt;
-        double b = SHOULDER_LIMITS_AVOIDANCE_WEIGHT * bSt + WRIST_LIMITS_AVOIDANCE_WEIGHT * bWt;
+        double a = (SHOULDER_LIMITS_AVOIDANCE_WEIGHT * aSt + WRIST_LIMITS_AVOIDANCE_WEIGHT * aWt)
+                / (SHOULDER_LIMITS_AVOIDANCE_WEIGHT + WRIST_LIMITS_AVOIDANCE_WEIGHT);
+        double b = (SHOULDER_LIMITS_AVOIDANCE_WEIGHT * bSt + WRIST_LIMITS_AVOIDANCE_WEIGHT * bWt)
+                / (SHOULDER_LIMITS_AVOIDANCE_WEIGHT + WRIST_LIMITS_AVOIDANCE_WEIGHT);
 
         double distAB = sqrt(a * a + b * b);
         double psi1 = MathUtils.normalizeAngle(2 * atan2(-b - distAB, a));
@@ -57,8 +59,6 @@ public class JointLimitAvoidance {
         
         double psi1Score = optFunction(psi1);
         double psi2Score = optFunction(psi2);
-        
-        Log.infof("%5.3f, %5.3f", psi1, psi2);
         
         double psiOpt = psi1Score > psi2Score ? psi1 : psi2;
         

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import static fr.wollfie.cottus.utils.maths.MathUtils.*;
+import static fr.wollfie.cottus.utils.maths.matrices.MatrixUtil.isNan;
 import static java.lang.Math.*;
 
 public class Analytical7DOFsIK implements IKSolver {
@@ -140,6 +141,8 @@ public class Analytical7DOFsIK implements IKSolver {
 
         // Compute aS, bS, ... cW
         this.computeMatrices();
+
+        if (isNan(aS) || isNan(bS) || isNan(cS) || isNan(aW) || isNan(bW) || isNan(cW)) { throw new NoSolutionException(); }
         
         try {
             

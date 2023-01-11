@@ -59,7 +59,7 @@ public interface IKSolver {
             if (table.isVirtual(c)) { diff = Vector.Zero(n); }
             else { diff = Vector.unit(c, n).scaled(delta); }
 
-            cols[c] = xT.minus(KinematicsModule.forward(table, qT.plus(diff))).scaled(1/delta);
+            cols[c] = xT.minus(KinematicsModule.forward(table, qT.plus(diff), false)).scaled(1/delta);
         }
 
         return MatrixUtil.from(cols);

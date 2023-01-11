@@ -43,4 +43,9 @@ public class Rotation {
     public Rotation plus(Rotation that) {
         return Rotation.from(this.rotationMatrix.mult(that.rotationMatrix));
     }
+
+    /** @return The inverse rotation of this rotation */
+    public Rotation inverted() {
+        return Rotation.from(this.rotationMatrix.transpose());
+    }
 }

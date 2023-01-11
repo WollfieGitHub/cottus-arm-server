@@ -22,7 +22,7 @@ public final class LineToAnimation extends EndEffectorAnimation implements Anima
     public LineToAnimation(
             @JsonProperty("relative") boolean relative,
             @JsonProperty("position") Vector3D position,
-            @JsonProperty("time") double timeSec
+            @JsonProperty("timeSec") double timeSec
     ) {
         super(relative);
         this.position = position;

@@ -4,6 +4,7 @@ import fr.wollfie.cottus.dto.animation.AnimationPreview;
 import fr.wollfie.cottus.dto.animation.AnimationRepositoryEntry;
 import fr.wollfie.cottus.dto.animation.ArmAnimation;
 import fr.wollfie.cottus.exception.NoSolutionException;
+import fr.wollfie.cottus.models.animation.pathing.AnimationPrimitive;
 import fr.wollfie.cottus.models.animation.preview.AnimationSampler;
 import fr.wollfie.cottus.repositories.animation.AnimationRepository;
 import io.smallrye.mutiny.Multi;
@@ -11,10 +12,7 @@ import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("/api/arm-animation")
@@ -23,35 +21,35 @@ public class ArmAnimationResource {
     @Inject AnimationSampler animationSampler;
     @Inject AnimationRepository animationRepository;
     
-    @GET
+    @POST
     @Path("/preview")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Uni<AnimationPreview> getPreviewFor(
-            @QueryParam("animation_name") String animationName,
-            @QueryParam("nb_points") int nbPoints
+            @QueryParam("nb_points") int nbPoints,
+            AnimationPrimitive animation
     ) {
         return Uni.createFrom().item(Unchecked.supplier(() -> {
-            ArmAnimation animation = animationRepository.getAnimationByName(animationName).getAnimation();
             
             try { return animationSampler.sample(animation, nbPoints); } 
-            catch (NoSolutionException e) { throw new RuntimeException(String.format("The animation %s has" +
-                    " some unreachable points...", animationName)); }
+            catch (NoSolutionException e) { throw new RuntimeException("The animation has" +
+                    " some unreachable points..."); }
         }));
     }
     
-    @GET
+    @POST
     @Path("/min-time")
     @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Uni<Double> getMinTimeSecFor(
-            @QueryParam("animation_name") String animationName,
-            @QueryParam("nb_points") int nbPoints
+            @QueryParam("nb_points") int nbPoints,
+            AnimationPrimitive animation
     ) {
         return Uni.createFrom().item(Unchecked.supplier(() -> {
-            ArmAnimation animation = animationRepository.getAnimationByName(animationName).getAnimation();
 
             try { return animationSampler.getMinTimeSec(animation, nbPoints); }
-            catch (NoSolutionException e) { throw new RuntimeException(String.format("The animation %s has" +
-                    " some unreachable points...", animationName)); }
+            catch (NoSolutionException e) { throw new RuntimeException("The animation has" +
+                    " some unreachable points..."); }
         }));
     }
     

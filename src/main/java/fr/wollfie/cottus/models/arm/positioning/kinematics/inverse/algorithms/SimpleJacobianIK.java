@@ -121,7 +121,7 @@ public class SimpleJacobianIK implements IKSolver {
     }
 
     /** Returns the position of the end effector given the current table and angles */
-    private Vector updateCurrentPosition() { return KinematicsModule.forward(table, qT); }
+    private Vector updateCurrentPosition() { return KinematicsModule.forward(table, qT, false); }
 
     
 }

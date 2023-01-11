@@ -9,6 +9,7 @@ import io.smallrye.mutiny.groups.MultiItemCombine3;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static fr.wollfie.cottus.utils.maths.MathUtils.*;
@@ -285,6 +286,7 @@ public class FeasibleArmAngles {
         if (tLo <= tMin && tMin <= tHi && tLo <= tMax && tMax <= tHi) {
             return domain;
         }
+        Log.infof("%5.3f, %5.3f, %5.3f, %5.3f", tMin, tLo, tHi, tMax);
         throw new IllegalStateException("Something went wrong...");
     }
 }

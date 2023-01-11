@@ -1,10 +1,10 @@
 package fr.wollfie.cottus.models.arm.positioning.specification;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.specification.EndEffectorSpecification;
+import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.quarkus.logging.Log;
@@ -16,21 +16,21 @@ public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
     /** True if this specification is the root for others, meaning it should be considered,
      *  once its position is evaluated, as 0 for all following {@link RelativeEndEffectorSpecification}
      *  that are not root*/
-    private final AbsoluteEndEffectorSpecification root;
-    public AbsoluteEndEffectorSpecification getRoot() { return root; }
+    private EndEffectorSpecification root;
+    public EndEffectorSpecification getRoot() { return root; }
 
     /**
      * Builds a new Relative End effector specification
      * @param root The {@link AbsoluteEndEffectorSpecification} this specification is relative to. If left
      *             {@code null}, then the specification is relative to the arm's absolute specification
-     *             at the moment the {@link RelativeEndEffectorSpecification#toAbsolute(CottusArm)} is called
+     *             at the moment the {@link RelativeEndEffectorSpecification#fixAsAbsolute(CottusArm)} is called
      * @param endEffectorPosition The position difference of the end effector
      * @param endEffectorOrientation The orientation difference of the end effector
      * @param preferredArmAngle The preferred arm angle difference
      */
     @JsonCreator
     private RelativeEndEffectorSpecification(
-            @JsonProperty("root") AbsoluteEndEffectorSpecification root,
+            @JsonProperty("root") EndEffectorSpecification root,
             @JsonProperty("endEffectorPosition") Vector3D endEffectorPosition,
             @JsonProperty("endEffectorRotation") Rotation endEffectorOrientation,
             @JsonProperty("armAngle") double preferredArmAngle
@@ -47,7 +47,7 @@ public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
      * @param preferredArmAngle The preferred arm angle difference
      */
     public static RelativeEndEffectorSpecification createRelativeTo(
-            AbsoluteEndEffectorSpecification rootSpecification,
+            EndEffectorSpecification rootSpecification,
             Vector3D endEffectorPosition,
             Rotation endEffectorOrientation,
             double preferredArmAngle
@@ -57,7 +57,7 @@ public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
 
     /**
      * Builds a new Relative End effector specification. The specification is relative to the arm's absolute specification
-     * at the moment the {@link RelativeEndEffectorSpecification#toAbsolute(CottusArm)} is called
+     * at the moment the {@link RelativeEndEffectorSpecification#fixAsAbsolute(CottusArm)} is called
      * @param endEffectorPosition The position difference of the end effector
      * @param endEffectorOrientation The orientation difference of the end effector
      * @param preferredArmAngle The preferred arm angle difference
@@ -72,8 +72,8 @@ public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
     
 
     @Override
-    public List<Double> getAnglesFor(CottusArm cottusArm) {
-        return null;
+    public List<Double> getAnglesFor(CottusArm cottusArm) throws NoSolutionException {
+        return this.fixAsAbsolute(cottusArm).getAnglesFor(cottusArm);
     }
 
     /**
@@ -82,10 +82,10 @@ public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
      * @param arm The arm's state
      * @return The absolute specification for the current context
      */
-    public AbsoluteEndEffectorSpecification toAbsolute(CottusArm arm) {
-        AbsoluteEndEffectorSpecification root = this.root;
-        if (root == null) { root = arm.getEndEffectorSpecification(); }
-
+    public AbsoluteEndEffectorSpecification fixAsAbsolute(CottusArm arm) {
+        if (root == null) { root = arm.getEndEffectorSpecification(); Log.infof("NUULLL ROOOOTTT"); }
+        else if (root instanceof RelativeEndEffectorSpecification rel) { root = rel.fixAsAbsolute(arm); }
+        
         return new AbsoluteEndEffectorSpecification(
                 root.getEndEffectorPosition().plus( this.getEndEffectorPosition() ),
                 root.getEndEffectorOrientation().plus( this.getEndEffectorOrientation() ),
