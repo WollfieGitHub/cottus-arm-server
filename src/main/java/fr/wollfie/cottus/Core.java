@@ -7,6 +7,7 @@ import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Startup;
+import org.bson.codecs.pojo.PojoCodecProvider;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -45,6 +46,8 @@ public class Core {
         Log.info("The update loop started...");
         
         Log.infof("Available ports : %s", communication.getAllPorts());
+        
+        
     }
     
     /** Update the application's state */

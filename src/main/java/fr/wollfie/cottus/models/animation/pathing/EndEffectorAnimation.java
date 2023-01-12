@@ -28,7 +28,9 @@ public abstract class EndEffectorAnimation implements ArmAnimation {
     @JsonProperty("relative") protected final boolean relative;
     @JsonGetter("relative") public boolean isRelative() { return relative; }
 
-    public EndEffectorAnimation(boolean relative) { this.relative = relative; }
+    public EndEffectorAnimation(
+            @JsonProperty("relative") boolean relative
+    ) { this.relative = relative; }
 
     @Override
     public EndEffectorSpecification evaluateAt(double secFromStart) {

@@ -142,6 +142,7 @@ public class Vector {
     }
 
     /** @return True if the vector is Zero, false otherwise */
+    @JsonIgnore
     public boolean isZero() {
         for (double value : values) {
             if (!MathUtils.isZero(value)) { return false; }
@@ -150,6 +151,7 @@ public class Vector {
     }
 
     /** @return True if the vector has any coordinate that is {@link Double#NaN}, false otherwise */
+    @JsonIgnore
     public boolean isNan() {
         for (double value : values) {
             if (Double.isNaN(value)) { return true; }

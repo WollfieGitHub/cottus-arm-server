@@ -83,7 +83,7 @@ public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
      * @return The absolute specification for the current context
      */
     public AbsoluteEndEffectorSpecification fixAsAbsolute(CottusArm arm) {
-        if (root == null) { root = arm.getEndEffectorSpecification(); Log.infof("NUULLL ROOOOTTT"); }
+        if (root == null) { root = arm.getEndEffectorSpecification(); }
         else if (root instanceof RelativeEndEffectorSpecification rel) { root = rel.fixAsAbsolute(arm); }
         
         return new AbsoluteEndEffectorSpecification(

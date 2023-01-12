@@ -98,14 +98,16 @@ public class AnimationSampler implements AnimationSamplerService {
         double aDiffMax, tDiffMax;
         for (int i = 1; i < nbPoints-1; i++) {
 
-            aNext = Vector.fromList( animation.evaluateAt( (i+1) * dt ).getAnglesFor(arm) );
-            aDiff = aNext.minus(aCurr);
-            
-            aDiffMax = aDiff.toList().stream().max(Double::compareTo).orElse(Double.MAX_VALUE);
-            tDiffMax = aDiffMax / motorsRadPerSec;
-            sumSec += tDiffMax;
-            
-            aCurr = aNext;
+            try {
+                aNext = Vector.fromList( animation.evaluateAt( (i+1) * dt ).getAnglesFor(arm) );
+                aDiff = aNext.minus(aCurr);
+
+                aDiffMax = aDiff.toList().stream().max(Double::compareTo).orElse(Double.MAX_VALUE);
+                tDiffMax = aDiffMax / motorsRadPerSec;
+                sumSec += tDiffMax;
+
+                aCurr = aNext;
+            } catch (NoSolutionException e) { /* Silenced */ }
 
         }
         return sumSec;

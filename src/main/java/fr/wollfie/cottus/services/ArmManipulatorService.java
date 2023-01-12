@@ -1,7 +1,9 @@
 package fr.wollfie.cottus.services;
 
 import fr.wollfie.cottus.dto.CottusArm;
+import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
+import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.specification.AngleSpecification;
 
 public interface ArmManipulatorService {
@@ -38,4 +40,7 @@ public interface ArmManipulatorService {
     
     /** Sets the arm ready for receiving commands */
     void setReady();
+
+    /** Moves the arm given a specification for it */
+    void moveGiven(ArmSpecification specification) throws AngleOutOfBoundsException, NoSolutionException;
 }

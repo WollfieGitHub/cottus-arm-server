@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
  * Kinematic Analysis :
  * The specification of each joint of the arm relative to the previous one (Excluding the end effector's)
  * 
- * R1 Orthog R2 Orthog R3 Orthog R4 Orthog Orthog R5 Orthog R6
+ * R1 Orthog R2 Orthog R3 Orthog R4 Orthog R5 Orthog R6
  */
 public class EvolutionaryIK implements IKSolver {
 

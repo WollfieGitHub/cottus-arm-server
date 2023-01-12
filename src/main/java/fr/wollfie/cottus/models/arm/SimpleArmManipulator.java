@@ -2,7 +2,9 @@ package fr.wollfie.cottus.models.arm;
 
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.JointBounds;
+import fr.wollfie.cottus.dto.specification.ArmSpecification;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
+import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.cottus_arm.DrivenCottusArm;
 import fr.wollfie.cottus.models.arm.cottus_arm.SimulatedCottusArm;
 import fr.wollfie.cottus.models.arm.positioning.joints.bounds.IntervalJointBounds;
@@ -64,6 +66,13 @@ public class SimpleArmManipulator implements ArmManipulatorService {
     
     @Override
     public void moveGiven(AngleSpecification specification) throws AngleOutOfBoundsException {
+        if (!specification.isValidGiven(this.cottusArm)) { throw new AngleOutOfBoundsException(); }
+
+        this.cottusArm.setAngles(specification.getAnglesFor(this.cottusArm));
+    }
+
+    @Override
+    public void moveGiven(ArmSpecification specification) throws AngleOutOfBoundsException, NoSolutionException {
         if (!specification.isValidGiven(this.cottusArm)) { throw new AngleOutOfBoundsException(); }
 
         this.cottusArm.setAngles(specification.getAnglesFor(this.cottusArm));
