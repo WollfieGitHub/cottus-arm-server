@@ -5,11 +5,13 @@ import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.models.arm.positioning.specification.AngleSpecification;
 import fr.wollfie.cottus.resources.serial.msg.AnglesMessage;
+import fr.wollfie.cottus.resources.serial.msg.EspLogMessage;
 import fr.wollfie.cottus.resources.serial.msg.EspMessage;
 import fr.wollfie.cottus.resources.serial.msg.MotorSpeedMessage;
 import fr.wollfie.cottus.services.ArmCommunicationService;
 import fr.wollfie.cottus.services.ArmManipulatorService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
+import io.quarkus.logging.Log;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -45,10 +47,11 @@ public class SerialArmCommunication implements ArmCommunicationService {
     @Override
     public void onMsgReceived(String msg) {
         EspMessage message = EspMessage.getPacket(msg);
-        
+
         if (message instanceof AnglesMessage anglesMessage) { this.onAnglesReceived(anglesMessage); }
         else if (message instanceof MotorSpeedMessage motorSpeedMessage) { this.onMotorSpeedReceived(motorSpeedMessage); }
-        else { throw new IllegalArgumentException("No message is fitting the pattern of \"" + msg + "\""); }
+        else if (message instanceof EspLogMessage espLog) { Log.infof("from ESP : %s", espLog.getMessage()); }
+        else { throw new IllegalArgumentException("No message fitting this format"); }
     }
     
     private void onAnglesReceived(AnglesMessage distances) {
@@ -60,7 +63,7 @@ public class SerialArmCommunication implements ArmCommunicationService {
     private void onMotorSpeedReceived(MotorSpeedMessage motorSpeed) {
         this.motorRadPerSec = motorSpeed.getRadPerSec();
         // When the arm sends the motor speed, it signals the arm is ready to take commands 
-        this.armManipulatorService.setReady();
+        this.armManipulatorService.setReady(true);
     }
     
     /** @return The arm angles formatted as a string */

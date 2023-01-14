@@ -16,7 +16,6 @@ import java.util.List;
 
 /**
  * The arm represented as an object.
- * 
  * It has a list of {@link Joint} where
  * the first articulation will be the root of the arm 
  * and the last element will be the end effector.
@@ -29,7 +28,10 @@ public interface CottusArm {
 // ||                                                                                      ||
 // \\======================================================================================//
     
-    /** @return True if the arm is ready to be taking commands, false otherwise */
+    /** @return True if the arm is ready to be taking commands, false otherwise 
+     * If this method returns false, it means that something else has control
+     * of the arm
+     */
     @JsonGetter("isReady") boolean isReady();
     
     /** @return The articulations of the arm */
@@ -194,5 +196,5 @@ public interface CottusArm {
     }
 
     /** Sets the arm ready for receiving commands */
-    void setReady();
+    void setReady(boolean ready);
 }

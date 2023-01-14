@@ -3,6 +3,8 @@ package fr.wollfie.cottus.models.animation.pathing;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wollfie.cottus.utils.Preconditions;
+import fr.wollfie.cottus.utils.Utils;
+import fr.wollfie.cottus.utils.maths.MathUtils;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.mutiny.tuples.Tuple3;
@@ -19,7 +21,7 @@ public class SemiCircleToAnimation extends EndEffectorAnimation implements Anima
     /** Radius of the circle */
     private final double radius;
     /** Total angle of the circle */
-    private final double angleRad;
+    private final double theta;
     
     /** The center point of the circle */
     private final Vector3D centerPoint;
@@ -70,27 +72,23 @@ public class SemiCircleToAnimation extends EndEffectorAnimation implements Anima
         // its sides of equal lengths equal to the radius of the circle
         // This triangle's third side is the chord length of the remaining arc
         // https://www.omnicalculator.com/math/arc-length
-        this.angleRad = toRadians(this.angleDeg);
-        double arcAngle = PI/2.0 - this.angleRad;
+        this.theta = toRadians(this.angleDeg);
 
         Vector3D chord = this.endPosition.minus(Vector3D.Zero);
         double chordLength = chord.norm();
         
-        double a = sin(arcAngle/2.0);
-        double radius = chordLength / (2*a);
+        double radius = chordLength / (2*sin( this.theta/2.0 ));
         
-        // Half of the base of the triangle and its other side with the Pythagorean Theorem
-        double height = sqrt(radius*radius - (chordLength*chordLength/4));
         // TODO REMOVE ONCE CHECKED
+        double height = sqrt(radius*radius - (chordLength*chordLength/4.0));
         if (Double.isNaN(height)) { throw new IllegalStateException("Wrong sign under the root"); }
         
-        this.centerPoint = circleDirection
-                .normalized()
-                .scaled(height)
-                .plus(chord.scaled(0.5));
+        this.centerPoint = Vector3D.Zero
+                .plus(chord.scaled(1/2.0))
+                .plus(circleDirection.normalized().scaled(height));
         // Vectors orthogonal to the normal, base of the plan of the circle
-        this.u = circleDirection.normalized();
-        this.v = chord.normalized();
+        this.u = chord.normalized().scaled(-1);
+        this.v = circleDirection.normalized();
         
         this.radius = radius;
     }
@@ -100,14 +98,14 @@ public class SemiCircleToAnimation extends EndEffectorAnimation implements Anima
 
     @Override
     protected Tuple3<Vector3D, Rotation, Double> relativeEvaluateAt(double secFromStart) {
-        double theta = this.angleRad/timeSec;
+        double theta = (secFromStart / this.getDurationSecs()) * this.theta
+                - (this.theta - PI) / 2.0;
         // https://www.quora.com/A-problem-in-3D-geometry-what-is-the-equation-of-the-circle-see-details
         return Tuple3.of(
                 this.centerPoint
                         .plus( u.scaled(radius * cos(theta)) )
                         .plus( v.scaled(radius * sin(theta)) ),
-                Rotation.Identity,
-                0.0
+                Rotation.Identity, 0.0
         );
     }
 }

@@ -94,7 +94,7 @@ public class SimpleArmManipulator implements ArmManipulatorService {
     public double getAngle(int jointIndex) { return this.cottusArm.getAngle(jointIndex); }
 
     @Override
-    public void setReady() {
-        this.cottusArm.setReady();
+    public void setReady(boolean ready) {
+        this.cottusArm.setReady(ready);
     }
 }

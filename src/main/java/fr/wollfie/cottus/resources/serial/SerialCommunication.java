@@ -4,6 +4,8 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import fr.wollfie.cottus.services.ArmCommunicationService;
+import io.quarkus.logging.Log;
+import org.apache.commons.math3.stat.regression.ModelSpecificationException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -22,42 +24,61 @@ public class SerialCommunication {
     SerialPort activePort;
     SerialPort[] ports = SerialPort.getCommPorts();
     
-    @Inject
-    ArmCommunicationService armCommunicationService;
-    
+    @Inject ArmCommunicationService armCommunicationService;
+    private static final int BAUD_RATE = 9600;
+
     /** @return All the serial ports available for this device */
     public List<SerialPort> getAllPorts() {
         return Arrays.asList(this.ports);
     }
 
+    private void tryReconnect() {
+        
+    }
+    
     /**
      * Start the connection with the specified Serial Port
      * @param port The serial port to connect to
      */
-    public void startOn(SerialPort port) {
-        activePort = SerialPort.getCommPort(port.getPortDescription());
+    public void connectTo(SerialPort port) {
+        this.activePort = port;
+        
+        if (activePort.isOpen()) {
+            Log.errorf("Failed to connect to port %s because it is already opened by another device!",
+                    activePort.getPortDescription());
+            return;
+        } else if (!activePort.openPort()) {
+            Log.errorf("Failed to connect to port %s for unknown reasons...",
+                    activePort.getPortDescription());
+            return;
+        } else {
+            Log.infof("%s port opened.", activePort.getPortDescription());
 
-        if (activePort.openPort())
-            System.out.println(activePort.getPortDescription() + " port opened.");
-        System.out.println(activePort.getPortDescription() + " Connected");
+        }
 
+        SerialCommunication communication = this;
+        activePort.setBaudRate(BAUD_RATE);
         activePort.addDataListener(new SerialPortDataListener() {
 
             @Override
             public void serialEvent(SerialPortEvent event) {
-                int size = event.getSerialPort().bytesAvailable();
                 
-                byte[] buffer = new byte[size];
-                event.getSerialPort().readBytes(buffer, size);
-                
-                String msg = new String(buffer);
-                
-                armCommunicationService.onMsgReceived(msg);
+                switch (event.getEventType()) {
+                    case SerialPort.LISTENING_EVENT_DATA_AVAILABLE -> {
+                        byte[] buffer = event.getReceivedData();
+                        String msg = new String(buffer);
+
+                        armCommunicationService.onMsgReceived(msg);
+                        break;
+                    }
+                    case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED -> { communication.tryReconnect(); break; }
+                }
             }
 
             @Override
             public int getListeningEvents() {
-                return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
+                return SerialPort.LISTENING_EVENT_DATA_AVAILABLE
+                        | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
             }
         });
     }

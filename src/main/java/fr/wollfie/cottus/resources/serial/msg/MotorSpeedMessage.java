@@ -14,7 +14,7 @@ public class MotorSpeedMessage extends EspMessage {
 
     @Override
     protected void parse(String message) {
-        this.radPerSec = Double.parseDouble(message);
+        this.radPerSec = Math.toRadians(Double.parseDouble(message));
     }
 
     // For now, no need to send speed to the arduino

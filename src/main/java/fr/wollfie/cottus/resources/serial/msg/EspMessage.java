@@ -30,11 +30,12 @@ public abstract class EspMessage {
         EspMessage msg = switch (header) {
             case AnglesMessage.HEADER -> new AnglesMessage();
             case MotorSpeedMessage.HEADER -> new MotorSpeedMessage();
-            default -> null;
+            default -> new EspLogMessage();
         };
-        if (msg == null) { return null; }
         
         msg.parse(message.substring(HEADER_LENGTH));
         return msg;
     }
+    
+    
 }

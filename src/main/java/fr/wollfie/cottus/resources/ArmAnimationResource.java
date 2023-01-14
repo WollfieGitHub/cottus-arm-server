@@ -53,8 +53,7 @@ public class ArmAnimationResource {
         return Uni.createFrom().item(Unchecked.supplier(() -> {
 
             try { return animationSampler.getMinTimeSec(animation, nbPoints); }
-            catch (NoSolutionException e) { throw new RuntimeException("The animation has" +
-                    " some unreachable points..."); }
+            catch (NoSolutionException e) { return -1.0; /* Silenced */ }
         }));
     }
     

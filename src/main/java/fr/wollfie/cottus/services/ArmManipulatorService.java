@@ -39,7 +39,7 @@ public interface ArmManipulatorService {
     double getAngle(int jointIndex);
     
     /** Sets the arm ready for receiving commands */
-    void setReady();
+    void setReady(boolean ready);
 
     /** Moves the arm given a specification for it */
     void moveGiven(ArmSpecification specification) throws AngleOutOfBoundsException, NoSolutionException;

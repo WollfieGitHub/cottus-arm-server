@@ -50,5 +50,5 @@ public class DrivenCottusArm implements CottusArm {
         
     }
 
-    @Override public void setReady() { throw new UnsupportedOperationException("A Driven Arm cannot be set ready"); }
+    @Override public void setReady(boolean ready) { throw new UnsupportedOperationException("A Driven Arm cannot be set ready"); }
 }

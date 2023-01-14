@@ -34,7 +34,7 @@ public class AnglesMessage extends EspMessage {
         do {
             index = message.indexOf(END_VALUE_MARKER);
             value = message.substring(0, index);
-            angles.add(Double.parseDouble(value));
+            angles.add(Math.toRadians(Double.parseDouble(value)));
             // Remove the current value + the end marker
             message = message.substring(index+1);
             

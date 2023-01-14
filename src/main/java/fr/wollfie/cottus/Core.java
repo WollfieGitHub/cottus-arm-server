@@ -1,18 +1,21 @@
 package fr.wollfie.cottus;
 
+import com.fazecast.jSerialComm.SerialPort;
 import fr.wollfie.cottus.resources.serial.SerialCommunication;
 import fr.wollfie.cottus.resources.websockets.ArmStateSocket;
 import fr.wollfie.cottus.services.ArmCommunicationService;
+import fr.wollfie.cottus.services.ArmManipulatorService;
 import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Startup;
-import org.bson.codecs.pojo.PojoCodecProvider;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.List;
+import java.util.UnknownFormatConversionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +35,8 @@ public class Core {
     @Inject SerialCommunication communication;
     @Inject ArmCommunicationService armCommunicationService;
     
+    @Inject ArmManipulatorService armManipulatorService;
+    
 // //======================================================================================\\
 // ||                                                                                      ||
 // ||                                       LIFECYCLE                                      ||
@@ -44,10 +49,20 @@ public class Core {
         this.timer = Executors.newSingleThreadScheduledExecutor(Executors.defaultThreadFactory());
         this.timer.scheduleAtFixedRate(this::update, 0, UPDATE_DELAY, TimeUnit.MILLISECONDS);
         Log.info("The update loop started...");
+
+        List<SerialPort> ports = communication.getAllPorts();
+        Log.infof("Available ports : %s", ports);
+        if (!ports.isEmpty()) { communication.connectTo(ports.get(0)); }
+        else { Log.warnf("No available serial ports to connect to..."); }
         
-        Log.infof("Available ports : %s", communication.getAllPorts());
-        
-        
+        final boolean defaultReady = true;
+        this.armManipulatorService.setReady(defaultReady);
+        Log.infof("Default ready state set to %s%s", defaultReady, 
+                (!defaultReady 
+                        ? "Waiting for arm to connect and finish its homing sequence..." 
+                        : ", please" +
+                " set it to false once the arduino connects correctly. Set it back to true" +
+                " for development purposes."));
     }
     
     /** Update the application's state */

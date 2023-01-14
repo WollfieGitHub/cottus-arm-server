@@ -28,18 +28,15 @@ public class AnimationController implements ArmAnimatorControllerService {
     
     @Override
     public void update() {
-        Log.info(this.active);
-        Log.info(this.current);
-        if (!this.active) { this.current = null; return; }
+        if (!this.active) { this.clearAnimation(); }
         if (this.current == null) { return; }
 
         double dt = (System.currentTimeMillis() - timeStarted) / 1000.0;
 
         // Animation is over
-        if (this.current.getDurationSecs() <  dt) { this.current = null; this.active = false; return; }
+        if (this.current.getDurationSecs() <  dt) { this.clearAnimation(); return; }
 
         try {
-            Log.info("Move");
             armManipulatorService.moveGiven(this.current.evaluateAt(dt));
         } catch (AngleOutOfBoundsException | NoSolutionException e) { /* Drop frame and continue */ }
     }
@@ -51,10 +48,18 @@ public class AnimationController implements ArmAnimatorControllerService {
     public boolean playAnimation(ArmAnimation animation) {
         if (this.current != null) { return false; }
         
+        this.armManipulatorService.setReady(false);
         this.active = true;
         this.current = animation;
         this.timeStarted = System.currentTimeMillis();
         return true;
+    }
+    
+    /** Stops the animation from playing and reset the arm's state back to default */
+    private void clearAnimation() {
+        this.current = null;
+        this.active = false;
+        this.armManipulatorService.setReady(true);
     }
     
 }

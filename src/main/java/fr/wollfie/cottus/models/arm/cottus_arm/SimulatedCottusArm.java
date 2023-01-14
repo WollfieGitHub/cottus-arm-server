@@ -40,6 +40,6 @@ public final class SimulatedCottusArm implements CottusArm {
     @Override public List<Joint> joints() { return joints; }
     @Override public DHTable dhTable() { return dhTable; }
     @Override public boolean isReady() { return ready; }
-    @Override public void setReady() { this.ready = true; }
+    @Override public void setReady(boolean ready) { this.ready = ready; }
     
 }
