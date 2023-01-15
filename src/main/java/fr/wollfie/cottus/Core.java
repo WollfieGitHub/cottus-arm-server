@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import fr.wollfie.cottus.resources.serial.SerialCommunication;
 import fr.wollfie.cottus.resources.websockets.ArmStateSocket;
 import fr.wollfie.cottus.services.ArmCommunicationService;
-import fr.wollfie.cottus.services.ArmManipulatorService;
+import fr.wollfie.cottus.services.ArmStateService;
 import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import io.quarkus.logging.Log;
@@ -15,7 +15,6 @@ import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.List;
-import java.util.UnknownFormatConversionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +34,8 @@ public class Core {
     @Inject SerialCommunication communication;
     @Inject ArmCommunicationService armCommunicationService;
     
-    @Inject ArmManipulatorService armManipulatorService;
+    @Inject
+    ArmStateService armStateService;
     
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -56,7 +56,7 @@ public class Core {
         else { Log.warnf("No available serial ports to connect to..."); }
         
         final boolean defaultReady = true;
-        this.armManipulatorService.setReady(defaultReady);
+        this.armStateService.setReady(defaultReady);
         Log.infof("Default ready state set to %s%s", defaultReady, 
                 (!defaultReady 
                         ? "Waiting for arm to connect and finish its homing sequence..." 

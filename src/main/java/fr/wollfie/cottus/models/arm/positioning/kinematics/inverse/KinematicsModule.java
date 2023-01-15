@@ -65,8 +65,6 @@ public class KinematicsModule {
         // Otherwise the specification is absolute
         } else { absoluteEndEffectorSpecification = (AbsoluteEndEffectorSpecification) endEffectorSpecification; }
         
-        if (currentIKSolve != null && !currentIKSolve.isDone()) { currentIKSolve.cancel(true); }
-        
         // Need this weird stuff because of lambda's difficulty to deal with checked expression
         currentIKSolve = new IKFuture();
         CompletableFuture.runAsync(() -> {

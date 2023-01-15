@@ -3,10 +3,11 @@ package fr.wollfie.cottus.resources.serial;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
+import fr.wollfie.cottus.resources.serial.msg.SerialMessage;
 import fr.wollfie.cottus.services.ArmCommunicationService;
 import io.quarkus.logging.Log;
-import org.apache.commons.math3.stat.regression.ModelSpecificationException;
 
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
@@ -24,6 +25,8 @@ public class SerialCommunication {
     SerialPort activePort;
     SerialPort[] ports = SerialPort.getCommPorts();
     
+    private SerialMessage.Builder messageBuilder = SerialMessage.buildNew();
+    
     @Inject ArmCommunicationService armCommunicationService;
     private static final int BAUD_RATE = 9600;
 
@@ -33,7 +36,7 @@ public class SerialCommunication {
     }
 
     private void tryReconnect() {
-        
+        Log.info("Disconnected !");
     }
     
     /**
@@ -58,31 +61,47 @@ public class SerialCommunication {
 
         SerialCommunication communication = this;
         activePort.setBaudRate(BAUD_RATE);
+        
         activePort.addDataListener(new SerialPortDataListener() {
 
             @Override
             public void serialEvent(SerialPortEvent event) {
-                
-                switch (event.getEventType()) {
-                    case SerialPort.LISTENING_EVENT_DATA_AVAILABLE -> {
-                        byte[] buffer = event.getReceivedData();
-                        String msg = new String(buffer);
+                if (event.getEventType() == SerialPort.LISTENING_EVENT_DATA_AVAILABLE) {
+                    
+                    byte[] buffer = new byte[activePort.bytesAvailable()];
+                    activePort.readBytes(buffer, activePort.bytesAvailable());
+                    String msg = new String(buffer);
 
-                        armCommunicationService.onMsgReceived(msg);
-                        break;
+                    messageBuilder.append(msg);
+                    
+                    if (messageBuilder.isComplete()) {
+                        armCommunicationService.onMsgReceived(communication.messageBuilder.toMsg());
+                        messageBuilder = SerialMessage.buildNew();
                     }
-                    case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED -> { communication.tryReconnect(); break; }
-                }
+                } else if (
+                        event.getEventType() == SerialPort.LISTENING_EVENT_PORT_DISCONNECTED
+                        || event.getEventType() == SerialPort.LISTENING_EVENT_TIMED_OUT
+                ) { communication.tryReconnect(); }
             }
 
             @Override
             public int getListeningEvents() {
                 return SerialPort.LISTENING_EVENT_DATA_AVAILABLE
-                        | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
+                        | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED
+                        | SerialPort.LISTENING_EVENT_TIMED_OUT;
             }
         });
     }
-
+    
+    @PreDestroy
+    void cleanup() {
+        if (this.activePort != null && this.activePort.isOpen()) {
+            if (!this.activePort.closePort()) {
+                Log.errorf("Failed to close %s on cleanup", activePort);
+            }
+        }
+    }
+    
     /**
      * Write data to the arduino. This must be redundant data as it may be dropped 
      * if a packet was just sent 

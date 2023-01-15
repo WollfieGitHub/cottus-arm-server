@@ -1,13 +1,9 @@
 package fr.wollfie.cottus.resources;
 
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
-import fr.wollfie.cottus.exception.NoSolutionException;
-import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.KinematicsModule;
 import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.RelativeEndEffectorSpecification;
-import fr.wollfie.cottus.services.ArmManipulatorService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
-import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
 
 import javax.inject.Inject;

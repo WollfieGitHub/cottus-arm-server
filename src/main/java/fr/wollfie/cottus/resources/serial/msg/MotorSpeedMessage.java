@@ -3,7 +3,7 @@ package fr.wollfie.cottus.resources.serial.msg;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
 /** Message = "SP[value]" */
-public class MotorSpeedMessage extends EspMessage {
+public class MotorSpeedMessage extends SerialMessage {
     
     public static final String HEADER = "SP";
 

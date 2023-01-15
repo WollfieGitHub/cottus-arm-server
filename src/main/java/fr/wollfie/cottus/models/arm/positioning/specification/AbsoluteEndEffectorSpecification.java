@@ -10,6 +10,8 @@ import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class AbsoluteEndEffectorSpecification extends EndEffectorSpecification {
     
@@ -17,21 +19,21 @@ public class AbsoluteEndEffectorSpecification extends EndEffectorSpecification {
             @JsonProperty("endEffectorPosition") Vector3D endEffectorPosition,
             @JsonProperty("endEffectorRotation") Rotation endEffectorOrientation,
             @JsonProperty("armAngle") double armAngle
-    ) {
-        super(endEffectorPosition, endEffectorOrientation, armAngle);
-    }
+    ) { super(endEffectorPosition, endEffectorOrientation, armAngle); }
 
     @Override
     public List<Double> getAnglesFor(CottusArm cottusArm) throws NoSolutionException {
         try {
-            return KinematicsModule.inverseSolve(cottusArm, this).get();
+            return KinematicsModule.inverseSolve(cottusArm, this)
+                    .orTimeout(200, TimeUnit.MILLISECONDS).get();
         } catch (InterruptedException | ExecutionException e) {
             // If there are no solutions, then the list of angles is empty
             if (e instanceof ExecutionException execE && execE.getCause() instanceof NoSolutionException noSolE) {
                 throw noSolE;
-                
-            // Otherwise the future was interrupted
-            } else { throw new RuntimeException(e); }
+
+                // Otherwise the future was interrupted
+            }
+            throw new RuntimeException(e);
         }
     }
 

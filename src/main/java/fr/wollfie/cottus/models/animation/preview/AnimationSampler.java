@@ -5,20 +5,15 @@ import fr.wollfie.cottus.dto.animation.AnimationPreview;
 import fr.wollfie.cottus.dto.animation.AnimationPreviewPoint;
 import fr.wollfie.cottus.dto.animation.ArmAnimation;
 import fr.wollfie.cottus.dto.specification.ArmSpecification;
-import fr.wollfie.cottus.dto.specification.EndEffectorSpecification;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
-import fr.wollfie.cottus.models.animation.pathing.ComposedAnimation;
-import fr.wollfie.cottus.models.animation.pathing.LineToAnimation;
 import fr.wollfie.cottus.models.arm.cottus_arm.DrivenCottusArm;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.KinematicsModule;
-import fr.wollfie.cottus.resources.serial.SerialArmCommunication;
 import fr.wollfie.cottus.services.AnimationSamplerService;
 import fr.wollfie.cottus.services.ArmCommunicationService;
-import fr.wollfie.cottus.services.ArmManipulatorService;
+import fr.wollfie.cottus.services.ArmStateService;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
-import io.quarkus.logging.Log;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -28,7 +23,8 @@ import java.util.List;
 @ApplicationScoped
 public class AnimationSampler implements AnimationSamplerService {
     
-    @Inject ArmManipulatorService armManipulatorService;
+    @Inject
+    ArmStateService armStateService;
     @Inject ArmCommunicationService armCommunicationService;
     
     /**
@@ -40,7 +36,7 @@ public class AnimationSampler implements AnimationSamplerService {
      */
     public AnimationPreview sample(ArmAnimation animation, int nbPointsPerSec) throws NoSolutionException {
         double duration = animation.getDurationSecs();
-        DrivenCottusArm arm = new DrivenCottusArm(armManipulatorService.getArmState());
+        DrivenCottusArm arm = new DrivenCottusArm(armStateService.getArmState());
         
         List<AnimationPreviewPoint> samples = new ArrayList<>();
 
@@ -87,7 +83,7 @@ public class AnimationSampler implements AnimationSamplerService {
     public double getMinTimeSec(ArmAnimation animation, int nbPointsPerSec) throws NoSolutionException {
         // TODO MAYBE TAKE INTO ACCOUNT ACCELERATION TOO
         double motorsRadPerSec = armCommunicationService.getMotorSpeed();
-        CottusArm arm = armManipulatorService.getArmState();
+        CottusArm arm = armStateService.getArmState();
 
         int nbPoints = (int) (animation.getDurationSecs() * nbPointsPerSec);
         double dt = animation.getDurationSecs() / nbPoints;

@@ -1,10 +1,10 @@
 package fr.wollfie.cottus.resources.serial.msg;
 
-public class EspLogMessage extends EspMessage {
+public class SerialLogMessage extends SerialMessage {
 
     private String logMsg;
     
-    public EspLogMessage() {
+    public SerialLogMessage() {
         super("");
     }
 

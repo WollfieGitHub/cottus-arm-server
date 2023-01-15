@@ -21,7 +21,7 @@ public class IntervalJointBounds implements JointBounds {
     public static IntervalJointBounds of(ConvexInterval interval) { return new IntervalJointBounds(interval); }
     
     // TODO EDIT BACK
-    @Override public boolean isOutOfBounds(double v) { return false; /*return this.interval == null ? true : !this.interval.contains(v);*/ }
+    @Override public boolean isOutOfBounds(double v) { return !this.interval.contains(v); }
     @Override public double clamped(double v) {
         if (this.interval == null) { return Double.NaN; }
         

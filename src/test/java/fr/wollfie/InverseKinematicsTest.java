@@ -2,10 +2,9 @@ package fr.wollfie;
 
 import fr.wollfie.cottus.dto.Joint;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
-import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.specification.AbsoluteEndEffectorSpecification;
 import fr.wollfie.cottus.models.arm.positioning.specification.AngleSpecification;
-import fr.wollfie.cottus.services.ArmManipulatorService;
+import fr.wollfie.cottus.services.ArmStateService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.rotation.Rotation;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import javax.inject.Inject;
 
 import static java.lang.Math.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
@@ -23,7 +21,8 @@ import static org.hamcrest.Matchers.*;
 public class InverseKinematicsTest {
     
     @Inject ArmManualControllerService manualControllerService;
-    @Inject ArmManipulatorService manipulatorService;
+    @Inject
+    ArmStateService manipulatorService;
     
     @Test
     void inverseKinematicsHasSufficientErrorMargin() throws AngleOutOfBoundsException {

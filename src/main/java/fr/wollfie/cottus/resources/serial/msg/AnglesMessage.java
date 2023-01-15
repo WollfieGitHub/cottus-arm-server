@@ -6,17 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Message = "AN[value]D[value]D[value]D...D[value]D" */
-public class AnglesMessage extends EspMessage {
+public class AnglesMessage extends SerialMessage {
     
     public static final String HEADER = "AN";
     private static final String END_VALUE_MARKER = "D";
 
-    private List<Double> angles;
-    public List<Double> getAngles() { return angles; }
+    private List<Double> anglesRad;
+    public List<Double> getAngles() { return anglesRad; }
 
-    public AnglesMessage(List<Double> angles) {
+    public AnglesMessage(List<Double> anglesRad) {
         super(HEADER);
-        this.angles = angles;
+        this.anglesRad = anglesRad;
     }
 
     public AnglesMessage() { super(HEADER); }
@@ -27,14 +27,14 @@ public class AnglesMessage extends EspMessage {
         if (message.lastIndexOf(END_VALUE_MARKER) != message.length()-1) {
             throw new IllegalArgumentException("The message is ill formatted !"); 
         }
-        angles = new ArrayList<>();
+        anglesRad = new ArrayList<>();
         
         String value;
         int index;
         do {
             index = message.indexOf(END_VALUE_MARKER);
             value = message.substring(0, index);
-            angles.add(Math.toRadians(Double.parseDouble(value)));
+            anglesRad.add(Math.toRadians(Double.parseDouble(value)));
             // Remove the current value + the end marker
             message = message.substring(index+1);
             
@@ -48,8 +48,8 @@ public class AnglesMessage extends EspMessage {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(HEADER);
 
-        for (Double angle : this.angles) {
-            stringBuilder.append(angle).append(END_VALUE_MARKER);
+        for (Double angle : this.anglesRad) {
+            stringBuilder.append(Math.toDegrees(angle)).append(END_VALUE_MARKER);
         }
         return stringBuilder.toString();
     }

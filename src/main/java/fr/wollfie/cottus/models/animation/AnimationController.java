@@ -3,9 +3,8 @@ package fr.wollfie.cottus.models.animation;
 import fr.wollfie.cottus.dto.animation.ArmAnimation;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
-import fr.wollfie.cottus.services.ArmManipulatorService;
+import fr.wollfie.cottus.services.ArmStateService;
 import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
-import io.quarkus.logging.Log;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -16,7 +15,8 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class AnimationController implements ArmAnimatorControllerService {
     
-    @Inject ArmManipulatorService armManipulatorService;
+    @Inject
+    ArmStateService armStateService;
     
     private boolean active = false;
     @Override public void setActive(boolean active) { this.active = active; }
@@ -37,7 +37,7 @@ public class AnimationController implements ArmAnimatorControllerService {
         if (this.current.getDurationSecs() <  dt) { this.clearAnimation(); return; }
 
         try {
-            armManipulatorService.moveGiven(this.current.evaluateAt(dt));
+            armStateService.moveGiven(this.current.evaluateAt(dt));
         } catch (AngleOutOfBoundsException | NoSolutionException e) { /* Drop frame and continue */ }
     }
 
@@ -48,7 +48,7 @@ public class AnimationController implements ArmAnimatorControllerService {
     public boolean playAnimation(ArmAnimation animation) {
         if (this.current != null) { return false; }
         
-        this.armManipulatorService.setReady(false);
+        this.armStateService.setReady(false);
         this.active = true;
         this.current = animation;
         this.timeStarted = System.currentTimeMillis();
@@ -59,7 +59,7 @@ public class AnimationController implements ArmAnimatorControllerService {
     private void clearAnimation() {
         this.current = null;
         this.active = false;
-        this.armManipulatorService.setReady(true);
+        this.armStateService.setReady(true);
     }
     
 }

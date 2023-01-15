@@ -2,6 +2,7 @@ package fr.wollfie.cottus.services;
 
 import fr.wollfie.cottus.dto.CottusArm;
 import fr.wollfie.cottus.resources.serial.SerialCommunication;
+import fr.wollfie.cottus.resources.serial.msg.SerialMessage;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public interface ArmCommunicationService {
      * @param angleDiffsRad The list of angle difference in radians relative to 
      *                      the stepper motors' target rotation
      */
-    void onMsgReceived(String angleDiffsRad);
+    void onMsgReceived(SerialMessage angleDiffsRad);
 
     /**
      * @return The number of radians per seconds of the motors (For now they all have the same,

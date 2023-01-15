@@ -65,7 +65,15 @@ public class JointLimitAvoidance {
         if (this.feasibleArmAngles.isFeasible(psiOpt)) { this.feasiblePsiOpt = psiOpt; }
         else { this.feasiblePsiOpt = getBestFeasiblePsi(psiOpt); }
         
-        // Log.infof("Psi = %5.3f, score = %5.3f", feasiblePsiOpt, optFunction(this.feasiblePsiOpt));
+        /*
+            Log.infof("""
+                            
+                            Psi = %5.3f, score = %5.3f, feasible : %s
+                            Joint intervals = %s""",
+                    feasiblePsiOpt, optFunction(this.feasiblePsiOpt), this.feasibleArmAngles.isFeasible(this.feasiblePsiOpt),
+                    this.feasibleArmAngles.getFeasibleArmAngles());
+                    
+         */
     }
 
     /** @return The best psi according to the opt function  */

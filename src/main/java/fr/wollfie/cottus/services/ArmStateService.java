@@ -6,7 +6,7 @@ import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.specification.AngleSpecification;
 
-public interface ArmManipulatorService {
+public interface ArmStateService {
     
     /**
      * Move the arm using the angles found in the given specifications.

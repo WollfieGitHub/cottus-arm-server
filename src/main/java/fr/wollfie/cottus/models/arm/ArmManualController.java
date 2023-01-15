@@ -5,7 +5,7 @@ import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.exception.NoSolutionException;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.inverse.KinematicsModule;
 import fr.wollfie.cottus.models.arm.positioning.specification.AngleSpecification;
-import fr.wollfie.cottus.services.ArmManipulatorService;
+import fr.wollfie.cottus.services.ArmStateService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import io.quarkus.logging.Log;
 
@@ -15,7 +15,8 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class ArmManualController implements ArmManualControllerService {
 
-    @Inject ArmManipulatorService armManipulatorService;
+    @Inject
+    ArmStateService armStateService;
     
     private boolean active = false;
     @Override public void setActive(boolean active) { this.active = active; }
@@ -43,7 +44,7 @@ public class ArmManualController implements ArmManualControllerService {
         if (!this.active) { return; }
 
         // TODO RETHINK THIS UGLY PIECE OF CODE-
-        KinematicsModule.inverseSolve(armManipulatorService.getArmState(), endEffectorSpecification)
+        KinematicsModule.inverseSolve(armStateService.getArmState(), endEffectorSpecification)
             .exceptionally(e -> {
                 if (e instanceof NoSolutionException) { Log.error("No solution found !"); }
                 else { throw new RuntimeException(e); }
@@ -54,7 +55,7 @@ public class ArmManualController implements ArmManualControllerService {
                 AngleSpecification specification = new AngleSpecification(angles);
                 // Update the arm with the angles
                 try {
-                    armManipulatorService.moveGiven(specification);
+                    armStateService.moveGiven(specification);
                 // Shouldn't happen since the IKSolver should clamp the angles to give only valid angles
                 // or throw a NoSolutionException otherwise
                 } catch (AngleOutOfBoundsException e) { throw new IllegalStateException(e); }
@@ -65,10 +66,10 @@ public class ArmManualController implements ArmManualControllerService {
     public void setAngle(int jointIndex, double angleRad) throws AngleOutOfBoundsException {
         if (!this.active) { Log.warn("Cannot change angle while animation is playing !"); return; }
         
-        armManipulatorService.setAngle(jointIndex, angleRad);
+        armStateService.setAngle(jointIndex, angleRad);
     }
 
     @Override
-    public double getAngle(int jointIndex) { return armManipulatorService.getAngle(jointIndex); }
+    public double getAngle(int jointIndex) { return armStateService.getAngle(jointIndex); }
 
 }

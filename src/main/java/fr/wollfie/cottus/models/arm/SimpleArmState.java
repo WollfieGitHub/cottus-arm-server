@@ -10,19 +10,18 @@ import fr.wollfie.cottus.models.arm.cottus_arm.SimulatedCottusArm;
 import fr.wollfie.cottus.models.arm.positioning.joints.bounds.IntervalJointBounds;
 import fr.wollfie.cottus.models.arm.positioning.kinematics.DHTable;
 import fr.wollfie.cottus.models.arm.positioning.specification.AngleSpecification;
-import fr.wollfie.cottus.services.ArmManipulatorService;
+import fr.wollfie.cottus.services.ArmStateService;
 import fr.wollfie.cottus.utils.maths.intervals.trigonometric.TrigonometricInterval;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 import java.util.List;
 
 import static java.lang.Math.*;
 
 @ApplicationScoped
-public class SimpleArmManipulator implements ArmManipulatorService {
+public class SimpleArmState implements ArmStateService {
 
     private static final DHTable DH_TABLE_1 = new DHTable(
     //                       |  J1 |    J2 |   J3  |    J4 |  J5   |    J6 |  J7   |   TIP  |
@@ -36,11 +35,11 @@ public class SimpleArmManipulator implements ArmManipulatorService {
 
     private static final List <JointBounds> JOINT_BOUNDS_1 = List.of(
             IntervalJointBounds.ANY,
-            IntervalJointBounds.of(TrigonometricInterval.withDeg(-90, +45)),
+            IntervalJointBounds.of(TrigonometricInterval.withDeg(-45, +90)),
             IntervalJointBounds.ANY,
-            IntervalJointBounds.of(TrigonometricInterval.withDeg(-90, +45)),
+            IntervalJointBounds.of(TrigonometricInterval.withDeg(-45, +90)),
             IntervalJointBounds.ANY,
-            IntervalJointBounds.of(TrigonometricInterval.withDeg(-90, +45)),
+            IntervalJointBounds.of(TrigonometricInterval.withDeg(-45, +90)),
             IntervalJointBounds.ANY,
             IntervalJointBounds.EMPTY // End effector
     );
