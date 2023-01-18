@@ -46,7 +46,7 @@ public class SerialArmCommunication implements ArmCommunicationService {
         
         if (message instanceof AnglesMessage anglesMessage) { this.onAnglesReceived(anglesMessage); }
         else if (message instanceof MotorSpeedMessage motorSpeedMessage) { this.onMotorSpeedReceived(motorSpeedMessage); }
-        else if (message instanceof SerialLogMessage espLog) { Log.infof("from Serial : %s", espLog.getMessage()); }
+        else if (message instanceof SerialLogMessage espLog) { Log.infof("from Serial : %s", espLog.getMessage().replace("\n", "")); }
         else { throw new IllegalArgumentException("No message fitting this format"); }
     }
     

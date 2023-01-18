@@ -14,7 +14,7 @@ import fr.wollfie.cottus.utils.maths.rotation.Rotation;
  *     The Arm is the angle formed between the plane_0 and plane_phi where 
  *     <ul>
  *         <li>plane_0 is the plane formed by The base, The Shoulder, The Wrist</li>
- *         <li>plane_0 is the plane formed by The base, The Elbow, The Wrist</li>
+ *         <li>plane_phi is the plane formed by The base, The Elbow, The Wrist</li>
  *     </ul>
  * </p>
  * 

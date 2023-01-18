@@ -6,6 +6,9 @@ import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
+/**
+ * Transform based on the arm's {@link DHTable}
+ */
 public class DHBasedJointTransform implements JointTransform {
     
     private final DHTable dhTable;
@@ -23,9 +26,7 @@ public class DHBasedJointTransform implements JointTransform {
     }
 
     @Override
-    public Vector3D inverseTransform(Vector3D globalPosition) {
-        throw new NotImplementedYet();
-    }
+    public Vector3D inverseTransform(Vector3D globalPosition) { throw new NotImplementedYet(); }
 
     @Override
     public void setAngle(double angleRad) { this.dhTable.setVarTheta(jointIndex, angleRad); }

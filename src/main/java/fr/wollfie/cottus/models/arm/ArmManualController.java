@@ -15,8 +15,7 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class ArmManualController implements ArmManualControllerService {
 
-    @Inject
-    ArmStateService armStateService;
+    @Inject ArmStateService armStateService;
     
     private boolean active = false;
     @Override public void setActive(boolean active) { this.active = active; }
@@ -28,10 +27,7 @@ public class ArmManualController implements ArmManualControllerService {
 // \\======================================================================================//
 
     @Override
-    public void update() {
-        if (!this.active) { return; }
-        
-    }
+    public void update() { if (!this.active) { return; } }
 
 // //======================================================================================\\
 // ||                                                                                      ||

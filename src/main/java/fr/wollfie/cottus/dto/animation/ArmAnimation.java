@@ -7,6 +7,10 @@ import fr.wollfie.cottus.models.animation.pathing.SemiCircleToAnimation;
 import fr.wollfie.cottus.models.animation.pathing.WaitAnimation;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 
+/**
+ * An animation of the arm. It is represented by a function which, given a time elapsed in seconds,
+ * will give an {@link ArmSpecification}
+ */
 public interface ArmAnimation {
 
     /**

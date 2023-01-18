@@ -71,7 +71,7 @@ public abstract class SerialMessage {
         public SerialMessage toMsg() {
             if (!complete) { throw new IllegalStateException("The message isn't complete"); }
             
-            return SerialMessage.getPacket(msg.toString());
+            return SerialMessage.getPacket(msg.toString().replace("\n", ""));
         }
     }
 }

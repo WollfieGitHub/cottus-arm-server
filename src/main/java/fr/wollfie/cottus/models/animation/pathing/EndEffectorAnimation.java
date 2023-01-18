@@ -12,7 +12,8 @@ import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import io.smallrye.mutiny.tuples.Tuple3;
 
 /**
- * An animation that animates the end effector's position and orientation
+ * An animation that animates the end effector's position and orientation, as well
+ * as desired arm angle
  */
 public abstract class EndEffectorAnimation implements ArmAnimation {
 

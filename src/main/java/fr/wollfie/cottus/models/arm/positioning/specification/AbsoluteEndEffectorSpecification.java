@@ -13,6 +13,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * Specification for the End effector, in the absolute referential
+ */
 public class AbsoluteEndEffectorSpecification extends EndEffectorSpecification {
     
     public AbsoluteEndEffectorSpecification(

@@ -34,8 +34,7 @@ public class Core {
     @Inject SerialCommunication communication;
     @Inject ArmCommunicationService armCommunicationService;
     
-    @Inject
-    ArmStateService armStateService;
+    @Inject ArmStateService armStateService;
     
 // //======================================================================================\\
 // ||                                                                                      ||
@@ -50,10 +49,25 @@ public class Core {
         this.timer.scheduleAtFixedRate(this::update, 0, UPDATE_DELAY, TimeUnit.MILLISECONDS);
         Log.info("The update loop started...");
 
-        List<SerialPort> ports = communication.getAllPorts();
-        Log.infof("Available ports : %s", ports);
-        if (!ports.isEmpty()) { communication.connectTo(ports.get(0)); }
-        else { Log.warnf("No available serial ports to connect to..."); }
+        boolean connectSerial = false;
+        if (connectSerial) {
+
+            List<SerialPort> ports = communication.getAllPorts();
+            StringBuilder sb = new StringBuilder();
+            sb.append("\nUsing jSerialComm Library Version v")
+                    .append(SerialPort.getVersion());
+            sb.append("\nAvailable Ports:\n");
+            for (int i = 0; i < ports.size(); ++i) {
+                sb.append("   [").append(i).append("] ")
+                        .append(ports.get(i).getSystemPortName())
+                        .append(": ").append(ports.get(i).getDescriptivePortName())
+                        .append(" - ").append(ports.get(i).getPortDescription())
+                        .append("\n");
+            }
+            Log.info(sb.toString());
+            if (!ports.isEmpty()) { communication.connectTo(ports.get(0)); }
+            else { Log.warnf("No available serial ports to connect to..."); }
+        }
         
         final boolean defaultReady = true;
         this.armStateService.setReady(defaultReady);

@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 
-/** An object that transforms a point from a global space to the local space it represents */
+/** 
+ * An object that transforms a point from a global space to the
+ * local space of the joint
+ */
 public interface JointTransform {
 
     /**

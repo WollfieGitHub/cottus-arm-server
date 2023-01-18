@@ -20,11 +20,14 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Take different samples in an animation. Can compute the preview for an animation with different points
+ * or other metrics
+ */
 @ApplicationScoped
 public class AnimationSampler implements AnimationSamplerService {
     
-    @Inject
-    ArmStateService armStateService;
+    @Inject ArmStateService armStateService;
     @Inject ArmCommunicationService armCommunicationService;
     
     /**
@@ -51,7 +54,7 @@ public class AnimationSampler implements AnimationSamplerService {
 
                 List<Double> angles = specification.getAnglesFor(arm);
 
-                Vector posRot = KinematicsModule.forward( arm.dhTable(), Vector.fromList(angles), true );
+                Vector posRot = KinematicsModule.forwardSolve( arm.dhTable(), Vector.fromList(angles), true );
                 Vector3D position = Vector3D.of(posRot.get(0), posRot.get(1), posRot.get(2));
                 Vector3D direction = Vector3D.of(posRot.get(3), posRot.get(4), posRot.get(5));
 

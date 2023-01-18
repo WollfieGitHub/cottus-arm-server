@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * A compositions of {@link AnimationPrimitive}s which is serializable, and hence can be saved 
- * as a {@link AnimationRepositoryEntry }
+ * as a {@link AnimationRepositoryEntry } 
  */
 public class ComposedAnimation implements AnimationPrimitive {
 

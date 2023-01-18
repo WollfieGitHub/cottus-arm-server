@@ -68,9 +68,7 @@ public class BezierToAnimation extends EndEffectorAnimation implements Animation
      */
     @Override
     protected Tuple3<Vector3D, Rotation, Double> relativeEvaluateAt(double secFromStart) {
-
         double t = secFromStart / timeSec;
-
         return Tuple3.of( this.bezierCurve.apply(t), Rotation.Identity, 0.0 );
     }
 }

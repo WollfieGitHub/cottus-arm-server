@@ -2,6 +2,7 @@ package fr.wollfie.cottus.resources.serial;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
+import com.fazecast.jSerialComm.SerialPortDataListenerWithExceptions;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import fr.wollfie.cottus.resources.serial.msg.SerialMessage;
 import fr.wollfie.cottus.services.ArmCommunicationService;
@@ -21,14 +22,14 @@ import java.util.List;
 public class SerialCommunication {
 
     private static long lastPacketMs = System.currentTimeMillis();
-    private static final long PACKET_FREQUENCY_MS = 50;
+    private static final long PACKET_FREQUENCY_MS = 2000;
     SerialPort activePort;
     SerialPort[] ports = SerialPort.getCommPorts();
     
     private SerialMessage.Builder messageBuilder = SerialMessage.buildNew();
     
     @Inject ArmCommunicationService armCommunicationService;
-    private static final int BAUD_RATE = 9600;
+    private static final int BAUD_RATE = 115200;
 
     /** @return All the serial ports available for this device */
     public List<SerialPort> getAllPorts() {
@@ -54,15 +55,18 @@ public class SerialCommunication {
             Log.errorf("Failed to connect to port %s for unknown reasons...",
                     activePort.getPortDescription());
             return;
-        } else {
-            Log.infof("%s port opened.", activePort.getPortDescription());
+        } else { Log.infof("%s port opened.", activePort.getPortDescription()); }
 
+        if (!activePort.setBaudRate(BAUD_RATE)){
+            Log.errorf("%d bauds is disallowed by this system !", BAUD_RATE);
+            return;
         }
-
         SerialCommunication communication = this;
-        activePort.setBaudRate(BAUD_RATE);
         
-        activePort.addDataListener(new SerialPortDataListener() {
+        boolean success = activePort.addDataListener(new SerialPortDataListenerWithExceptions() {
+
+            @Override
+            public void catchException(Exception e) { Log.error(e); }
 
             @Override
             public void serialEvent(SerialPortEvent event) {
@@ -86,11 +90,12 @@ public class SerialCommunication {
 
             @Override
             public int getListeningEvents() {
-                return SerialPort.LISTENING_EVENT_DATA_AVAILABLE
-                        | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED
-                        | SerialPort.LISTENING_EVENT_TIMED_OUT;
+                return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
             }
         });
+        
+        if (!success) { Log.error("An error occurred during the registration of the port event listener..."); }
+        else { Log.info("Successfully connected to the port and registered the event listener..."); }
     }
     
     @PreDestroy

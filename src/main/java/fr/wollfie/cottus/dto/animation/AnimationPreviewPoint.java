@@ -3,6 +3,10 @@ package fr.wollfie.cottus.dto.animation;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 
+/**
+ * A point in the {@link AnimationPreview} that will be displayed by 
+ * the client
+ */
 public interface AnimationPreviewPoint {
     
     /** @return The position of the animation sample point in 3D Space */

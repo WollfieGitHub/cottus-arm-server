@@ -54,8 +54,7 @@ public class InterpolatedAnimation implements ArmAnimation {
      * @return The new set of frames to use
      */
     private List<AbsoluteEndEffectorSpecification> interpolate() {
-        // TODO
-        throw new NotImplementedYet();
+        return this.interpolatedFrames;
     }
     
     

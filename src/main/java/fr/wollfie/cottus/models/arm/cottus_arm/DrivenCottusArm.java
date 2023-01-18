@@ -44,11 +44,6 @@ public class DrivenCottusArm implements CottusArm {
     @Override public DHTable dhTable() {
         return this.dhTable;
     }
-    
-    @Override 
-    public void setAngle(int jointIndex, double angleRad) throws AngleOutOfBoundsException {
-        
-    }
 
     @Override public void setReady(boolean ready) { throw new UnsupportedOperationException("A Driven Arm cannot be set ready"); }
 }

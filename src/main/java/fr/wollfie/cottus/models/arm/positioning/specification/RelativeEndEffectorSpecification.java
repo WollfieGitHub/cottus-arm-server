@@ -11,6 +11,9 @@ import io.quarkus.logging.Log;
 
 import java.util.List;
 
+/**
+ * Specification for the End effector, in the end effector's referential
+ */
 public class RelativeEndEffectorSpecification extends EndEffectorSpecification {
 
     /** True if this specification is the root for others, meaning it should be considered,

@@ -54,7 +54,7 @@ public class AnglesMessage extends SerialMessage {
         return stringBuilder.toString();
     }
 
-    @Override public boolean isEmpty() { return angles == null; }
+    @Override public boolean isEmpty() { return this.anglesRad == null; }
 
 
 }

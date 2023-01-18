@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import fr.wollfie.cottus.dto.animation.ArmAnimation;
 
-/** The basic building blocks of an animation, used mainly for serializability and reproducibility */
+/** 
+ * The basic building blocks of an animation, used mainly for serializability 
+ * and reproducibility
+ */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = BezierToAnimation.class, name = "Bezier"),

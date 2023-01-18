@@ -2,6 +2,10 @@ package fr.wollfie.cottus.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * Bounds for the joint, sending an angle which {@link JointBounds#isOutOfBounds(double)} might damage
+ * the arm.
+ */
 public interface JointBounds {
     
     /** @return True if the given value {@code v} is in the bounds of the joint */

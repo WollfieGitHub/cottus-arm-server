@@ -5,8 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import fr.wollfie.cottus.exception.AngleOutOfBoundsException;
 import fr.wollfie.cottus.models.arm.positioning.joints.DrivenJoint;
+import fr.wollfie.cottus.utils.maths.Axis3D;
 import org.jboss.resteasy.reactive.server.core.serialization.EntityWriter;
 
+/**
+ * A joint of the arm. Its angle can vary using the {@link Joint#setAngleRad(double)} which
+ * will make the joint rotate around its local {@link Axis3D#Z}
+ */
 public interface Joint {
     
 //=========   ====  == =

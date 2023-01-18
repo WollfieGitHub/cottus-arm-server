@@ -40,7 +40,7 @@ public class KinematicsModule {
      * where {@code pos} is the position and {@code rot} is the euler angles of the rotation
      */
     @NotNull 
-    public static Vector forward(DHTable table, Vector angles, boolean copyTable) {
+    public static Vector forwardSolve(DHTable table, Vector angles, boolean copyTable) {
         if (copyTable) { table = table.copy(); }
         table.setVarThetas(angles);
         int n = table.size()-1;

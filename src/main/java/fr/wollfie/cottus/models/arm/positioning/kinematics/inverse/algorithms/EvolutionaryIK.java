@@ -88,7 +88,7 @@ public class EvolutionaryIK implements IKSolver {
         // Current joint configuration (angles) of the arm
         qT = new Vector(IntStream.range(0, n).mapToDouble(table::getVarTheta).toArray());
         // Current configuration (position and rotation) of the end effector
-        xT = KinematicsModule.forward(table, qT, false);
+        xT = KinematicsModule.forwardSolve(table, qT, false);
         
         // Attenuation factor that governs convergence speed of the algorithm
         standardDeviation = (maxPosError+maxRotError)/2.0;
@@ -175,7 +175,7 @@ public class EvolutionaryIK implements IKSolver {
         for (int i = 0; i < n; i++) { values[i] = this.bounds.get(i).clamped(values[i]); }
         
         qTs[l][kl] = new Vector(values);
-        xLs[l][kl] = KinematicsModule.forward(table, qTs[l][kl], false);
+        xLs[l][kl] = KinematicsModule.forwardSolve(table, qTs[l][kl], false);
 
     }
 

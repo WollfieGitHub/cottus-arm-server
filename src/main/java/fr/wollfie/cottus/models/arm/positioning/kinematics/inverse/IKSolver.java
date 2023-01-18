@@ -9,14 +9,11 @@ import fr.wollfie.cottus.utils.maths.Axis3D;
 import fr.wollfie.cottus.utils.maths.Vector;
 import fr.wollfie.cottus.utils.maths.Vector3D;
 import fr.wollfie.cottus.utils.maths.matrices.MatrixUtil;
-import fr.wollfie.cottus.utils.maths.rotation.Rotation;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.List;
 
 public interface IKSolver {
-    
-    double Delta = 1e-5;
 
     /**
      * Solve the inverse kinematics problem given the position in cartesian space of the end effector
@@ -59,7 +56,7 @@ public interface IKSolver {
             if (table.isVirtual(c)) { diff = Vector.Zero(n); }
             else { diff = Vector.unit(c, n).scaled(delta); }
 
-            cols[c] = xT.minus(KinematicsModule.forward(table, qT.plus(diff), false)).scaled(1/delta);
+            cols[c] = xT.minus(KinematicsModule.forwardSolve(table, qT.plus(diff), false)).scaled(1/delta);
         }
 
         return MatrixUtil.from(cols);
