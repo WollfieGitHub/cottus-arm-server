@@ -17,18 +17,15 @@ import static java.lang.Math.*;
 public class DHTable {
     
     /** d : Offset along the previous z to the common normal */
-    @JsonIgnore
-    private final double[] d;
+    @JsonIgnore private final double[] d;
     /** theta : Angle about the previous z, from old x to new x */
     @JsonIgnore private final double[] theta0;
     @JsonIgnore private final double[] currTheta;
     /** a : The length of the common normal. Assuming a revolute joint,
      * this is the radius about previous z */
-    @JsonIgnore 
-    private final double[] a;
+    @JsonIgnore private final double[] a;
     /** alpha : Angle about common normal, from old z to new z axis */
-    @JsonIgnore 
-    private final double[] alpha;
+    @JsonIgnore private final double[] alpha;
     
     /** virtual: If the joint exists only to change the referential between two set of joints
      * so that the arm can be modeled by DH parameters */

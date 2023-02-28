@@ -12,3 +12,11 @@ quarkus:
   banner:
     enabled: true
     path: "banner.txt"
+    
+    
+cottus:
+  config:
+    startup:
+      connect-serial: false
+      # Whether the program runs on the raspberry pi
+      on-pi: false

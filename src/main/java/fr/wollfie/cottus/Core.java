@@ -9,6 +9,7 @@ import fr.wollfie.cottus.services.arm_controller.ArmAnimatorControllerService;
 import fr.wollfie.cottus.services.arm_controller.ArmManualControllerService;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Startup;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -24,6 +25,10 @@ import java.util.concurrent.TimeUnit;
 @ApplicationScoped
 public class Core {
 
+    // Take a look at /resources/application.yml to see properties
+    @ConfigProperty(name = "cottus.config.startup.connect-serial") boolean connectSerial; 
+    @ConfigProperty(name = "cottus.config.startup.on-pi") boolean onPi;
+    
     private static final long UPDATE_DELAY = 33;
     private ScheduledExecutorService timer;
     
@@ -49,8 +54,7 @@ public class Core {
         this.timer.scheduleAtFixedRate(this::update, 0, UPDATE_DELAY, TimeUnit.MILLISECONDS);
         Log.info("The update loop started...");
 
-        boolean connectSerial = false;
-        if (connectSerial) {
+        if (this.connectSerial) {
 
             List<SerialPort> ports = communication.getAllPorts();
             StringBuilder sb = new StringBuilder();
